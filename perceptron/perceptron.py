@@ -26,19 +26,32 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
     def _for_data_point(self, x):
         activation = np.dot(x, self.weights)
-        # print('activation', activation)
         firing = self.activationFunction(activation)
-        # print('firing', firing)
         print(activation, firing, end='\t', sep='\t')
         return firing
 
     def _add_bias_node(self, X):
         # augment data with bias node
-        self.inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
+        inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
         print("inData")
-        print(self.inData)
+        print(inData)
+        return inData
 
-    def fit(self, X, y, initial_weights=None):
+    def _stochastic(self):
+        for dataPoint, target in zip(self.inData, self.targetData):
+            print(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
+            firing = self._for_data_point(dataPoint)
+            deltas = self.lr * (target - firing) * dataPoint
+            print(firing, deltas, sep='\t')
+            self.weights += np.reshape(deltas, (-1, 1))
+
+    def _batch(self):
+        activations = np.dot(self.inData, self.weights)
+        firing = self.activationFunction(activations)
+        print('firing', firing)
+        self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
+
+    def fit(self, X, y, initial_weights=None, epochs=1):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
         Args:
@@ -50,7 +63,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        self._add_bias_node(X)
+        self.inData = self._add_bias_node(X)
         self.targetData = y
 
         need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0)) else False
@@ -58,13 +71,8 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         self.weights = self.initial_weights
 
-        for dataPoint, target in zip(self.inData, self.targetData):
-            print(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
-            firing = self._for_data_point(dataPoint)
-            deltas = self.lr * (target - firing) * dataPoint
-            print(firing, deltas, sep='\t')
-            self.weights += np.reshape(deltas, (-1, 1))
-
+        for dummyEpoch in range(epochs):
+            self._stochastic()
 
         return self
 
@@ -78,7 +86,12 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             array, shape (n_samples,)
                 Predicted target values per element in X.
         """
-        pass
+        augmented = self._add_bias_node(X)
+        for dataPoint in augmented:
+            print(dataPoint, end='\t')
+            self._for_data_point(dataPoint)
+            print()
+        
 
     def initialize_weights(self, standard_weight_value=None):
         """ Initialize weights for perceptron. Don't forget the bias!
@@ -109,7 +122,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             score : float
                 Mean accuracy of self.predict(X) wrt. y.
         """
-
+        
         return 0
 
     def _shuffle_data(self, X, y):
