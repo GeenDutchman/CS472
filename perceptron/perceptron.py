@@ -13,7 +13,7 @@ from sklearn.linear_model import Perceptron
 
 class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
-    def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0):
+    def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=True):
         """ Initialize class with chosen hyperparameters.
 
         Args:
@@ -23,32 +23,39 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.lr = lr
         self.shuffle = shuffle
         self.activationFunction = activationFunction
+        self.printIt = printIt
+
+    def _pcPrint(self, *values: object, sep: str=' ', end: str='\n'):
+        # method header copied from builtins
+        if self.printIt:
+            print(*values, sep=sep, end=end)
+
 
     def _for_data_point(self, x):
         activation = np.dot(x, self.weights)
         firing = self.activationFunction(activation)
-        print(activation, firing, end='\t', sep='\t')
+        self._pcPrint(activation, firing, end='\t', sep='\t')
         return firing
 
     def _add_bias_node(self, X):
         # augment data with bias node
         inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
-        print("inData")
-        print(inData)
+        self._pcPrint("inData")
+        self._pcPrint(inData)
         return inData
 
     def _stochastic(self):
         for dataPoint, target in zip(self.inData, self.targetData):
-            print(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
+            self._pcPrint(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
             firing = self._for_data_point(dataPoint)
             deltas = self.lr * (target - firing) * dataPoint
-            print(firing, deltas, sep='\t')
+            self._pcPrint(firing, deltas, sep='\t')
             self.weights += np.reshape(deltas, (-1, 1))
 
     def _batch(self):
         activations = np.dot(self.inData, self.weights)
         firing = self.activationFunction(activations)
-        print('firing', firing)
+        self._pcPrint('firing', firing)
         self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
 
     def fit(self, X, y, initial_weights=None, epochs=1):
@@ -73,6 +80,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         for dummyEpoch in range(epochs):
             self._stochastic()
+            # self._batch()
 
         return self
 
@@ -88,9 +96,9 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         """
         augmented = self._add_bias_node(X)
         for dataPoint in augmented:
-            print(dataPoint, end='\t')
+            self._pcPrint(dataPoint, end='\t')
             self._for_data_point(dataPoint)
-            print()
+            self._pcPrint()
         
 
     def initialize_weights(self, standard_weight_value=None):
@@ -100,7 +108,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         """
         features = np.shape(self.inData)[0] # count of features
-        print("features",  features)
+        self._pcPrint("features",  features)
         outputs = np.shape(self.targetData)[1] # how many dimensions of outputs?? #TODO figure this out
 
         w = None
