@@ -23,6 +23,8 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.lr = lr
         self.shuffle = shuffle
 
+    def _for_data_point(x)
+
     def fit(self, X, y, initial_weights=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
@@ -35,7 +37,24 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        self.initial_weights = self.initialize_weights() if not initial_weights else initial_weights
+        # augment data with bias node
+        self.inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
+        print("inData")
+        print(self.inData)
+
+        self.targetData = y
+        need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0)) else False
+        self.initial_weights = self.initialize_weights(1) if need_initialize_weights else initial_weights
+
+        self.weights = self.initial_weights
+        print("weights")
+        print(self.weights)
+
+        for dataPoint in self.inData:
+            activation = np.dot(dataPoint, self.weights)
+            print('activations', activation)
+            firing = 1 if activation > 0 else 0
+
 
         return self
 
@@ -51,14 +70,23 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         """
         pass
 
-    def initialize_weights(self):
+    def initialize_weights(self, standard_weight_value=None):
         """ Initialize weights for perceptron. Don't forget the bias!
 
         Returns:
 
         """
+        features = np.shape(self.inData)[0] # count of features
+        print("features",  features)
+        outputs = np.shape(self.targetData)[1] # how many dimensions of outputs?? #TODO figure this out
 
-        return [0]
+        w = None
+        if standard_weight_value != None:
+            w = np.full((features, outputs), standard_weight_value)
+        else:
+            w = np.random.rand(features, outputs)
+        print('w', w)
+        return
 
     def score(self, X, y):
         """ Return accuracy of model on a given dataset. Must implement own score function.
@@ -83,4 +111,4 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
-        pass
+        return self.weights
