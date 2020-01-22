@@ -13,7 +13,7 @@ from sklearn.linear_model import Perceptron
 
 class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
-    def __init__(self, lr=.1, shuffle=True):
+    def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0):
         """ Initialize class with chosen hyperparameters.
 
         Args:
@@ -22,8 +22,21 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         """
         self.lr = lr
         self.shuffle = shuffle
+        self.activationFunction = activationFunction
 
-    def _for_data_point(x)
+    def _for_data_point(self, x):
+        activation = np.dot(x, self.weights)
+        # print('activation', activation)
+        firing = self.activationFunction(activation)
+        # print('firing', firing)
+        print(activation, firing, end='\t', sep='\t')
+        return firing
+
+    def _add_bias_node(self, X):
+        # augment data with bias node
+        self.inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
+        print("inData")
+        print(self.inData)
 
     def fit(self, X, y, initial_weights=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
@@ -37,23 +50,20 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        # augment data with bias node
-        self.inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
-        print("inData")
-        print(self.inData)
-
+        self._add_bias_node(X)
         self.targetData = y
+
         need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0)) else False
-        self.initial_weights = self.initialize_weights(1) if need_initialize_weights else initial_weights
+        self.initial_weights = self.initialize_weights(0) if need_initialize_weights else initial_weights
 
         self.weights = self.initial_weights
-        print("weights")
-        print(self.weights)
 
-        for dataPoint in self.inData:
-            activation = np.dot(dataPoint, self.weights)
-            print('activations', activation)
-            firing = 1 if activation > 0 else 0
+        for dataPoint, target in zip(self.inData, self.targetData):
+            print(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
+            firing = self._for_data_point(dataPoint)
+            deltas = self.lr * (target - firing) * dataPoint
+            print(firing, deltas, sep='\t')
+            self.weights += np.reshape(deltas, (-1, 1))
 
 
         return self
@@ -82,11 +92,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         w = None
         if standard_weight_value != None:
-            w = np.full((features, outputs), standard_weight_value)
+            w = np.full((features, outputs), standard_weight_value * 1.0)
         else:
             w = np.random.rand(features, outputs)
-        print('w', w)
-        return
+        # self.initial_weights = w
+        return w
 
     def score(self, X, y):
         """ Return accuracy of model on a given dataset. Must implement own score function.
