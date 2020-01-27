@@ -29,6 +29,9 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
                 count = self.count
             return self.container[key][count]
 
+        def getCurrentCount(self):
+            return self.count
+
         def endTrace(self):
             for key in self.container:
                 self.container[key].append('-')
@@ -88,12 +91,22 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         # self._pcPrint("inData", inData)
         return inData
 
+    # def _stopper(self, tracer, tol=0.0005):
+    #     numDataPoints = len(self.inData)
+    #     count = tracer.getCurrentCount()
+    #     sum = 0
+    #     for i in range(count, numDataPoints-count, -1):
+    #         target = tracer.get("target")
+
+
     def _stochastic(self, tracer):
         for dataPoint, target in zip(self.inData, self.targetData):
             # self._pcPrint(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
             tracer.addTrace("dataPoint", dataPoint).addTrace("target", target).addTrace("weights", np.transpose(self.weights))
             firing = self._for_data_point(dataPoint, tracer)
-            deltas = self.lr * (target - firing) * dataPoint
+            difference = target - firing
+            tracer.addTrace("difference", difference)
+            deltas = self.lr * (difference) * dataPoint
             # self._pcPrint(firing, deltas, sep='\t')
             tracer.addTrace("deltas", deltas)
             self.weights += np.reshape(deltas, (-1, 1))
