@@ -105,7 +105,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         # self._pcPrint("inData", inData)
         return inData
 
-    def _stopper(self, tracer, tol=0.0005):
+    def _getError(self, tracer):
         numDataPoints = len(self.inData) -1
         count = tracer.getCurrentCount() -1 
         l1Loss = 0
@@ -115,7 +115,10 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             l1Loss = l1Loss + (difference if difference > 0 else difference * -1)
 
         self._pcPrint("l1Loss", l1Loss)
-        if l1Loss < tol:
+        return l1Loss
+
+    def _stopper(self, tracer, tol=0.0005):
+        if _getError(tracer) < tol:
             return True
         return False
         
