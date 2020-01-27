@@ -14,26 +14,35 @@ from sklearn.linear_model import Perceptron
 class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
     class PerceptronTrace:
-        container = {}
-        count = 0
+        def __init__(self):
+            self.container = {}
+            self.count = 0
 
         def addTrace(self, key, result):
-            if key not in container:
-                container[key] = []
-            container[key].append(result)
+            if key not in self.container:
+                self.container[key] = []
+            self.container[key].append(result)
+            return self
 
         def nextLevel(self):
-            count = count + 1
+            self.count = self.count + 1
         
         def __repr__(self):
-            for key in container:
-                print(key, end='\t')
-            print()
-            for i in range(count):
-                for key in container:
-                    print(container[key][i], end='\t')
-                print()
-            print()
+            out = ''
+            for key in self.container:
+                # print(key, end='\t')
+                out = out + str(key) + '\t'
+            # print()
+            out = out + "\n\r"
+            for i in range(self.count):
+                for key in self.container:
+                    out = out + str(self.container[key][i]) + '\t'
+                    # print(self.container[key][i], end='\t')
+                out = out + "\n\r"
+                # print()
+            # print()
+            out = out + "\n\r"
+            return out
 
     def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=True):
         """ Initialize class with chosen hyperparameters.
@@ -46,7 +55,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.shuffle = shuffle
         self.activationFunction = activationFunction
         self.printIt = printIt
-        # self.trace = PerceptronTrace()
+        self.trace = PerceptronClassifier.PerceptronTrace()
 
     def _pcPrint(self, *values: object, sep: str=' ', end: str='\n'):
         # method header copied from builtins
@@ -57,23 +66,26 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
     def _for_data_point(self, x):
         activation = np.dot(x, self.weights)
         firing = self.activationFunction(activation)
-        self._pcPrint(activation, firing, end='\t', sep='\t')
+        # self._pcPrint(activation, firing, end='\t', sep='\t')
+        self.trace.addTrace("activation", activation).addTrace("firing", firing)
         return firing
 
     def _add_bias_node(self, X):
         # augment data with bias node
         inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
-        self._pcPrint("inData")
-        self._pcPrint(inData)
+        self._pcPrint("inData", inData)
         return inData
 
     def _stochastic(self):
         for dataPoint, target in zip(self.inData, self.targetData):
-            self._pcPrint(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
+            # self._pcPrint(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
+            self.trace.addTrace("dataPoint", dataPoint).addTrace("target", target).addTrace("weights", np.transpose(self.weights))
             firing = self._for_data_point(dataPoint)
             deltas = self.lr * (target - firing) * dataPoint
-            self._pcPrint(firing, deltas, sep='\t')
+            # self._pcPrint(firing, deltas, sep='\t')
+            self.trace.addTrace("deltas", deltas)
             self.weights += np.reshape(deltas, (-1, 1))
+            self.trace.nextLevel()
 
     def _batch(self):
         activations = np.dot(self.inData, self.weights)
@@ -104,7 +116,9 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         for dummyEpoch in range(epochs):
             self._stochastic()
             # self._batch()
+            
 
+        self._pcPrint(self.trace)
         return self
 
     def predict(self, X):
