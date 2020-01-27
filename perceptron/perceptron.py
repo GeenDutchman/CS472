@@ -24,6 +24,17 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self.container[key].append(result)
             return self
 
+        def get(self, key, count=-1):
+            if count == -1:
+                count = self.count
+            return self.container[key][count]
+
+        def endTrace(self):
+            for key in self.container:
+                self.container[key].append('-')
+            self.count = self.count + 1
+            return self
+
         def nextLevel(self):
             self.count = self.count + 1
         
@@ -55,7 +66,8 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.shuffle = shuffle
         self.activationFunction = activationFunction
         self.printIt = printIt
-        self.trace = PerceptronClassifier.PerceptronTrace()
+        self.trainTrace = PerceptronClassifier.PerceptronTrace()
+        self.executeTrace = PerceptronClassifier.PerceptronTrace()
 
     def _pcPrint(self, *values: object, sep: str=' ', end: str='\n'):
         # method header copied from builtins
@@ -63,35 +75,35 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             print(*values, sep=sep, end=end)
 
 
-    def _for_data_point(self, x):
+    def _for_data_point(self, x, tracer):
         activation = np.dot(x, self.weights)
         firing = self.activationFunction(activation)
         # self._pcPrint(activation, firing, end='\t', sep='\t')
-        self.trace.addTrace("activation", activation).addTrace("firing", firing)
+        tracer.addTrace("activation", activation).addTrace("firing", firing)
         return firing
 
     def _add_bias_node(self, X):
         # augment data with bias node
         inData = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
-        self._pcPrint("inData", inData)
+        # self._pcPrint("inData", inData)
         return inData
 
-    def _stochastic(self):
+    def _stochastic(self, tracer):
         for dataPoint, target in zip(self.inData, self.targetData):
             # self._pcPrint(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
-            self.trace.addTrace("dataPoint", dataPoint).addTrace("target", target).addTrace("weights", np.transpose(self.weights))
-            firing = self._for_data_point(dataPoint)
+            tracer.addTrace("dataPoint", dataPoint).addTrace("target", target).addTrace("weights", np.transpose(self.weights))
+            firing = self._for_data_point(dataPoint, tracer)
             deltas = self.lr * (target - firing) * dataPoint
             # self._pcPrint(firing, deltas, sep='\t')
-            self.trace.addTrace("deltas", deltas)
+            tracer.addTrace("deltas", deltas)
             self.weights += np.reshape(deltas, (-1, 1))
-            self.trace.nextLevel()
+            tracer.nextLevel()
 
-    def _batch(self):
-        activations = np.dot(self.inData, self.weights)
-        firing = self.activationFunction(activations)
-        self._pcPrint('firing', firing)
-        self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
+    # def _batch(self):
+    #     activations = np.dot(self.inData, self.weights)
+    #     firing = self.activationFunction(activations)
+    #     # self._pcPrint('firing', firing)
+    #     self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
 
     def fit(self, X, y, initial_weights=None, epochs=1):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
@@ -114,11 +126,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.weights = self.initial_weights
 
         for dummyEpoch in range(epochs):
-            self._stochastic()
+            self._stochastic(self.trainTrace)
             # self._batch()
-            
 
-        self._pcPrint(self.trace)
+        self.trainTrace.endTrace()
+        self._pcPrint(self.trainTrace)
         return self
 
     def predict(self, X):
@@ -133,9 +145,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         """
         augmented = self._add_bias_node(X)
         for dataPoint in augmented:
-            self._pcPrint(dataPoint, end='\t')
-            self._for_data_point(dataPoint)
-            self._pcPrint()
+            self._for_data_point(dataPoint, self.executeTrace)
+            self.executeTrace.nextLevel()
+        self.executeTrace.endTrace()
+        self._pcPrint(self.executeTrace)
+        return self
         
 
     def initialize_weights(self, standard_weight_value=None):
