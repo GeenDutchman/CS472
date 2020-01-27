@@ -13,6 +13,28 @@ from sklearn.linear_model import Perceptron
 
 class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
+    class PerceptronTrace:
+        container = {}
+        count = 0
+
+        def addTrace(self, key, result):
+            if key not in container:
+                container[key] = []
+            container[key].append(result)
+
+        def nextLevel(self):
+            count = count + 1
+        
+        def __repr__(self):
+            for key in container:
+                print(key, end='\t')
+            print()
+            for i in range(count):
+                for key in container:
+                    print(container[key][i], end='\t')
+                print()
+            print()
+
     def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=True):
         """ Initialize class with chosen hyperparameters.
 
@@ -24,6 +46,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.shuffle = shuffle
         self.activationFunction = activationFunction
         self.printIt = printIt
+        # self.trace = PerceptronTrace()
 
     def _pcPrint(self, *values: object, sep: str=' ', end: str='\n'):
         # method header copied from builtins
