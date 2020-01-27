@@ -24,10 +24,21 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self.container[key].append(result)
             return self
 
-        def get(self, key, count=-1):
+        def getElement(self, key, count=-1):
             if count == -1:
                 count = self.count
             return self.container[key][count]
+
+        def getColumns(self, *keys):
+            results = []
+            for c in range(self.count - 1):
+                results.append([])
+                for k in keys:
+                    results[c].append(self.container[k][c])
+            return np.array(results)
+
+
+
 
         def getCurrentCount(self):
             return self.count
@@ -72,6 +83,9 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.trainTrace = PerceptronClassifier.PerceptronTrace()
         self.executeTrace = PerceptronClassifier.PerceptronTrace()
 
+    def __repr__(self):
+        return str(self.trainTrace) + '\r\n' + str(self.executeTrace) + '\r\n'
+
     def _pcPrint(self, *values: object, sep: str=' ', end: str='\n'):
         # method header copied from builtins
         if self.printIt:
@@ -91,12 +105,20 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         # self._pcPrint("inData", inData)
         return inData
 
-    # def _stopper(self, tracer, tol=0.0005):
-    #     numDataPoints = len(self.inData)
-    #     count = tracer.getCurrentCount()
-    #     sum = 0
-    #     for i in range(count, numDataPoints-count, -1):
-    #         target = tracer.get("target")
+    def _stopper(self, tracer, tol=0.0005):
+        numDataPoints = len(self.inData) -1
+        count = tracer.getCurrentCount() -1 
+        l1Loss = 0
+
+        for i in range(count, count - numDataPoints, -1):
+            difference = tracer.getElement("difference", i)
+            l1Loss = l1Loss + (difference if difference > 0 else difference * -1)
+
+        self._pcPrint("l1Loss", l1Loss)
+        if l1Loss < tol:
+            return True
+        return False
+        
 
 
     def _stochastic(self, tracer):
@@ -140,7 +162,8 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         for dummyEpoch in range(epochs):
             self._stochastic(self.trainTrace)
-            # self._batch()
+            if self._stopper(self.trainTrace):
+                break
 
         self.trainTrace.endTrace()
         self._pcPrint(self.trainTrace)
@@ -162,7 +185,9 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self.executeTrace.nextLevel()
         self.executeTrace.endTrace()
         self._pcPrint(self.executeTrace)
-        return self
+        self._pcPrint(self.executeTrace.getColumns("firing"))
+        firingResults = self.executeTrace.getColumns("firing")
+        return firingResults, firingResults.shape
         
 
     def initialize_weights(self, standard_weight_value=None):
