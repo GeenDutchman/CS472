@@ -84,6 +84,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.trainTrace = PerceptronClassifier.PerceptronTrace()
         self.executeTrace = PerceptronClassifier.PerceptronTrace()
         self.indicies = []
+        self.trainDifference = np.inf
 
     def __repr__(self):
         return str(self.trainTrace) + '\r\n' + str(self.executeTrace) + '\r\n'
@@ -107,7 +108,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         # self._pcPrint("inData", inData)
         return inData
 
-    def _stopper(self, tracer, tol=0.5):
+    def _stopper(self, tracer, tol=0.0005):
         numDataPoints = len(self.inData) -1
         count = tracer.getCurrentCount() -1 
         if count < 0:
@@ -119,7 +120,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             l1Loss = l1Loss + (difference if difference > 0 else difference * -1)
 
         self._pcPrint("l1Loss", l1Loss)
-        return (l1Loss, l1Loss < tol)        
+        l1_GT_prev = (l1Loss >= self.trainDifference + tol) or (l1Loss >= self.trainDifference - tol)
+        self._pcPrint("l1_GT_prev", l1_GT_prev)
+        if not l1_GT_prev:
+            self.trainDifference = l1Loss
+        return (l1Loss, l1_GT_prev)
 
 
     def _stochastic(self, tracer):
