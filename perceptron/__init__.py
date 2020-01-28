@@ -10,6 +10,6 @@ y = np.array([[0],[1],[1],[0]])
 # print(x)
 # print(y)
 
-pc = PerceptronClassifier(lr=1, printIt=False)
+pc = PerceptronClassifier(lr=1, printIt=True)
 # print(pc)
 print(pc.fit(x, y, epochs=4).score(np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]]), np.array([[0],[0],[1],[1]])))

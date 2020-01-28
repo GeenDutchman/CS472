@@ -82,6 +82,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.printIt = printIt
         self.trainTrace = PerceptronClassifier.PerceptronTrace()
         self.executeTrace = PerceptronClassifier.PerceptronTrace()
+        self.indicies = []
 
     def __repr__(self):
         return str(self.trainTrace) + '\r\n' + str(self.executeTrace) + '\r\n'
@@ -125,7 +126,10 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
 
     def _stochastic(self, tracer):
-        for dataPoint, target in zip(self.inData, self.targetData):
+        # for dataPoint, target in zip(self.inData, self.targetData):
+        for randIndex in self.indicies:
+            dataPoint = self.inData[randIndex]
+            target = self.targetData[randIndex]
             # self._pcPrint(dataPoint, target, np.transpose(self.weights), end='\t', sep='\t')
             tracer.addTrace("dataPoint", dataPoint).addTrace("target", target).addTrace("weights", np.transpose(self.weights))
             firing = self._for_data_point(dataPoint, tracer)
@@ -155,8 +159,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
+        if len(X) != len(y):
+            raise "The lengths of X and y do not match!"
         self.inData = self._add_bias_node(X)
         self.targetData = y
+        self.indicies = range(len(y))
 
         need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0)) else False
         self.initial_weights = self.initialize_weights(0) if need_initialize_weights else initial_weights
@@ -167,6 +174,8 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             self._stochastic(self.trainTrace)
             if self._stopper(self.trainTrace):
                 break
+            if self.shuffle:
+                self._shuffle_data()
 
         self.trainTrace.endTrace()
         self._pcPrint(self.trainTrace)
@@ -231,13 +240,17 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         
         return count / numTargets
 
-    def _shuffle_data(self, X, y):
+    def _shuffle_data(self):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
             It might be easier to concatenate X & y and shuffle a single 2D array, rather than
              shuffling X and y exactly the same way, independently.
         """
-        
-        pass
+        poss_indecies = list(range(len(self.inData)))
+        self.indicies = []
+        while len(poss_indecies) > 0:
+            index = np.random.randint(0, len(poss_indecies))
+            self.indicies.append(poss_indecies.pop(index))
+            
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
