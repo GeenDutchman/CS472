@@ -141,7 +141,8 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             deltas = self.lr * (difference) * dataPoint
             # self._pcPrint(firing, deltas, sep='\t')
             tracer.addTrace("deltas", deltas)
-            self.weights += np.reshape(deltas, (-1, 1))
+            self.weights = self.weights + np.reshape(deltas, (-1, 1))
+            # print(self.weights)
             tracer.nextLevel()
 
     # def _batch(self):
