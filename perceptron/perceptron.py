@@ -106,9 +106,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         # self._pcPrint("inData", inData)
         return inData
 
-    def _getError(self, tracer):
+    def _stopper(self, tracer, tol=0.5):
         numDataPoints = len(self.inData) -1
         count = tracer.getCurrentCount() -1 
+        if count < 0:
+            return (np.inf, False)
         l1Loss = 0
 
         for i in range(count, count - numDataPoints, -1):
@@ -116,13 +118,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             l1Loss = l1Loss + (difference if difference > 0 else difference * -1)
 
         self._pcPrint("l1Loss", l1Loss)
-        return l1Loss
-
-    def _stopper(self, tracer, tol=0.0005):
-        if self._getError(tracer) < tol:
-            return True
-        return False
-        
+        return (l1Loss, l1Loss < tol)        
 
 
     def _stochastic(self, tracer):
@@ -147,7 +143,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
     #     # self._pcPrint('firing', firing)
     #     self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
 
-    def fit(self, X, y, initial_weights=None, epochs=1):
+    def fit(self, X, y, initial_weights=None, epochs=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
         Args:
@@ -170,12 +166,15 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         self.weights = self.initial_weights
 
-        for dummyEpoch in range(epochs):
+
+
+        epochCount = 0
+        print(epochs)
+        while (epochs is not None and epochCount < epochs) or (epochs is None and not self._stopper(self.trainTrace)[1]):
             self._stochastic(self.trainTrace)
-            if self._stopper(self.trainTrace):
-                break
             if self.shuffle:
                 self._shuffle_data()
+            epochCount = epochCount + 1
 
         self.trainTrace.endTrace()
         self._pcPrint(self.trainTrace)
