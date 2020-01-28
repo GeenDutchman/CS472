@@ -170,7 +170,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.targetData = y
         self.indicies = range(len(y))
 
-        need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0)) else False
+        need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0) or (standard_weight_value is None)) else False
         self.initial_weights = self.initialize_weights(standard_weight_value) if need_initialize_weights else initial_weights
 
         self.weights = self.initial_weights
