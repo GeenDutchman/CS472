@@ -118,7 +118,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         return l1Loss
 
     def _stopper(self, tracer, tol=0.0005):
-        if _getError(tracer) < tol:
+        if self._getError(tracer) < tol:
             return True
         return False
         
@@ -220,16 +220,23 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
         Returns:
             score : float
-                Mean accuracy of self.predict(X) wrt. y.
+                Mean accuracy of self.predict(X) wrt. [with respect to] y.
         """
+        predictResults = self.predict(X)
+        numTargets = len(y)
+        count = 0
+        for p, t in zip(predictResults[0], y):
+            if p == t:
+                count = count + 1
         
-        return 0
+        return count / numTargets
 
     def _shuffle_data(self, X, y):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
             It might be easier to concatenate X & y and shuffle a single 2D array, rather than
              shuffling X and y exactly the same way, independently.
         """
+        
         pass
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.

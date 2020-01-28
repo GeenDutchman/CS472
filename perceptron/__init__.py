@@ -12,4 +12,4 @@ y = np.array([[0],[1],[1],[0]])
 
 pc = PerceptronClassifier(lr=1, printIt=False)
 # print(pc)
-print(pc.fit(x, y, epochs=4).predict(np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]])))
+print(pc.fit(x, y, epochs=4).score(np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]]), np.array([[0],[0],[1],[1]])))
