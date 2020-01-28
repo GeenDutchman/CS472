@@ -17,19 +17,27 @@ from arff import Arff
 
 print("------------arff-------------------")
 
-try:
-    mat = Arff("../data/perceptron/debug/linsep2nonorigin.arff",label_count=1)
-    data = mat.data[:,0:-1]
-    labels = mat.data[:,-1].reshape(-1,1)
-    PClass = PerceptronClassifier(lr=0.1,shuffle=False,deterministic=10,printIt=False)
-    PClass.fit(data,labels)
-    Accuracy = PClass.score(data,labels)
-    print("Accuray = [{:.2f}]".format(Accuracy))
-    print("Final Weights =",PClass.get_weights())
-
-except Exception as e:
-    print(e)
-    print(PClass)
+mat = Arff("../data/perceptron/debug/linsep2nonorigin.arff", label_count=1)
+data = mat.data[:, 0:-1]
+labels = mat.data[:, -1].reshape(-1, 1)
+PClass = PerceptronClassifier(
+    lr=0.1, shuffle=False, deterministic=10, printIt=False)
+PClass.fit(data, labels)
+Accuracy = PClass.score(data, labels)
+print("Accuray = [{:.2f}]".format(Accuracy))
+print("Final Weights =", PClass.get_weights())
 
 
 print("--------------arf2------------------------------")
+
+mat = Arff("../datasets/data_banknote_authentication.arff", label_count=1)
+np_mat = mat.data
+data = mat[:, :-1]
+labels = mat[:, -1].reshape(-1, 1)
+
+#### Make Classifier ####
+P2Class = PerceptronClassifier(lr=0.1, shuffle=False, deterministic=10)
+P2Class.fit(data, labels)
+Accuracy = P2Class.score(data, labels)
+print("Accuray = [{:.2f}]".format(Accuracy))
+print("Final Weights =", P2Class.get_weights()
