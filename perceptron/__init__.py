@@ -87,8 +87,60 @@ def inseperable():
         print("Epochs = ", P4Class.get_epochs_trained())
 
     # print(P4Class)
+
+def _shuffle_split(data, percent_test):
+    poss_indecies = list(range(len(data)))
+    indicies = []
+    print(len(poss_indecies))
+    print(int(percent_test * len(poss_indecies)))
+    testSize = int(percent_test * len(poss_indecies))
+    while len(poss_indecies) > testSize:
+        index = np.random.randint(0, len(poss_indecies))
+        result = poss_indecies.pop(index)
+        # indicies.append(result)
+        # print(index, result)
+        indicies.append(result)
+
+    training = []
+    for i in indicies:
+        training.append(data[i])
+    
+    testing = []
+    for i in poss_indecies:
+        testing.append(data[i])
+
+
+    return np.array(training), np.array(testing)
+
+def voting():
+    print("--------------voting---------------------")
+    mat = Arff("../data/perceptron/vote.arff", label_count=1)
+    np_mat = mat.data
+
+    for iteration in range(5):
+        print("xxxxxxxxxxx   " + str(iteration) + "  xxxxxxxx")
+        training, testing = _shuffle_split(mat.data, .3)
+
+        data = training[:, :-1]
+        labels = training[:, -1].reshape(-1, 1)
+        P5Class = PerceptronClassifier(lr=0.1, shuffle=True)
+        P5Class.fit(data, labels)
+
+        Accuracy = P5Class.score(data, labels)
+        print("Accuracy = [{:.2f}]".format(Accuracy))
+        print("Epochs = ", P5Class.get_epochs_trained())    
+
+        tData = testing[:, :-1]
+        tLabels = testing[:, -1].reshape(-1, 1)
+        tAccuracy = P5Class.score(tData, tLabels)
+        print("Test Accuracy = [{:.2f}]".format(tAccuracy))
+        print("Test Epochs = ", P5Class.get_epochs_trained())
+    
+
+
 basic()
 debug()
 evaluation()
 seperable()
 inseperable()
+voting()

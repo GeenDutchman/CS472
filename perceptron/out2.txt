@@ -1,0 +1,106 @@
+-------------basic---------------
+1.0
+------------arff-------------------
+Accuray = [0.88]
+Final Weights = [-0.23  0.18 -0.1 ]
+--------------arf2------------------------------
+Accuray = [0.99]
+Final Weights = [-3.80657242 -2.840821   -3.0719334  -1.4003906   4.9       ]
+----------------seperable-----------------------
+Learning Rate =  1.0
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.9
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.8
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.7000000000000001
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.6000000000000001
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.5
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.4
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.30000000000000004
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.2
+Accuracy = [0.88]
+Epochs =  4
+Learning Rate =  0.1
+Accuracy = [0.88]
+Epochs =  4
+----------------Inseperable-----------------------
+Learning Rate =  1.0
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.9
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.8
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.7000000000000001
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.6000000000000001
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.5
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.4
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.30000000000000004
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.2
+Accuracy = [0.62]
+Epochs =  10
+Learning Rate =  0.1
+Accuracy = [0.62]
+Epochs =  10
+--------------voting---------------------
+xxxxxxxxxxx   0  xxxxxxxx
+461
+138
+Accuracy = [0.97]
+Epochs =  4
+Test Accuracy = [0.00]
+Test Epochs =  4
+xxxxxxxxxxx   1  xxxxxxxx
+461
+138
+Accuracy = [0.93]
+Epochs =  3
+Test Accuracy = [0.00]
+Test Epochs =  3
+xxxxxxxxxxx   2  xxxxxxxx
+461
+138
+Accuracy = [0.97]
+Epochs =  3
+Test Accuracy = [0.00]
+Test Epochs =  3
+xxxxxxxxxxx   3  xxxxxxxx
+461
+138
+Accuracy = [0.93]
+Epochs =  3
+Test Accuracy = [0.00]
+Test Epochs =  3
+xxxxxxxxxxx   4  xxxxxxxx
+461
+138
+Accuracy = [0.95]
+Epochs =  3
+Test Accuracy = [0.00]
+Test Epochs =  3
