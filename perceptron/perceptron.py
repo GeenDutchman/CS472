@@ -69,7 +69,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             out = out + "\n\r"
             return out
 
-    def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=False):
+    def __init__(self, lr=.1, shuffle=True, deterministic=None, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=False):
         """ Initialize class with chosen hyperparameters.
 
         Args:
@@ -78,6 +78,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         """
         self.lr = lr
         self.shuffle = shuffle
+        self.epochs = deterministic
         self.activationFunction = activationFunction
         self.printIt = printIt
         self.trainTrace = PerceptronClassifier.PerceptronTrace()
@@ -143,7 +144,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
     #     # self._pcPrint('firing', firing)
     #     self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
 
-    def fit(self, X, y, initial_weights=None, epochs=None):
+    def fit(self, X, y, initial_weights=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
         Args:
@@ -169,8 +170,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
 
         epochCount = 0
-        print(epochs)
-        while (epochs is not None and epochCount < epochs) or (epochs is None and not self._stopper(self.trainTrace)[1]):
+        while (self.epochs is not None and epochCount < self.epochs) or (self.epochs is None and not self._stopper(self.trainTrace)[1]):
             self._stochastic(self.trainTrace)
             if self.shuffle:
                 self._shuffle_data()
