@@ -85,9 +85,10 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.executeTrace = PerceptronClassifier.PerceptronTrace()
         self.indicies = []
         self.trainDifference = np.inf
+        self.epochCount = 0
 
     def __repr__(self):
-        return str(self.trainTrace) + '\r\n' + str(self.executeTrace) + '\r\n'
+        return str(self.trainTrace) + '\r\n' + str(self.executeTrace) + '\r\n' + 'epochCount ' + str(self.epochCount) + '\r\n'
 
     def _pcPrint(self, *values: object, sep: str=' ', end: str='\n'):
         # method header copied from builtins
@@ -175,12 +176,12 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
 
 
-        epochCount = 0
-        while (self.epochs is not None and epochCount < self.epochs) or (self.epochs is None and not self._stopper(self.trainTrace)[1]):
+        self.epochCount = 0
+        while (self.epochs is not None and self.epochCount < self.epochs) or (self.epochs is None and not self._stopper(self.trainTrace)[1]):
             self._stochastic(self.trainTrace)
             if self.shuffle:
                 self._shuffle_data()
-            epochCount = epochCount + 1
+            self.epochCount = self.epochCount + 1
 
         self.trainTrace.endTrace()
         self._pcPrint(self.trainTrace)
@@ -262,3 +263,6 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
         return np.reshape(self.weights, (1,-1))[0]
+
+    def get_epochs_trained(self):
+        return self.epochCount
