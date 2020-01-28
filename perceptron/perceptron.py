@@ -69,7 +69,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             out = out + "\n\r"
             return out
 
-    def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=True):
+    def __init__(self, lr=.1, shuffle=True, activationFunction = lambda activation: 1 if activation > 0 else 0, printIt=False):
         """ Initialize class with chosen hyperparameters.
 
         Args:
