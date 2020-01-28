@@ -149,7 +149,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
     #     # self._pcPrint('firing', firing)
     #     self.weights += self.lr * np.dot(np.transpose(self.inData), activations - self.targetData)
 
-    def fit(self, X, y, initial_weights=None):
+    def fit(self, X, y, initial_weights=None, standard_weight_value=0):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
         Args:
@@ -164,11 +164,12 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         if len(X) != len(y):
             raise "The lengths of X and y do not match!"
         self.inData = self._add_bias_node(X)
+        self._pcPrint("inData\n\r", self.inData)
         self.targetData = y
         self.indicies = range(len(y))
 
         need_initialize_weights = True if ((initial_weights is None) or (initial_weights.size is 0)) else False
-        self.initial_weights = self.initialize_weights(0) if need_initialize_weights else initial_weights
+        self.initial_weights = self.initialize_weights(standard_weight_value) if need_initialize_weights else initial_weights
 
         self.weights = self.initial_weights
 
@@ -212,9 +213,10 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         Returns:
 
         """
-        features = np.shape(self.inData)[0] # count of features
-        self._pcPrint("features",  features)
+        features = np.shape(self.inData)[1] # count of features
+        self._pcPrint("features",  np.shape(self.inData))
         outputs = np.shape(self.targetData)[1] # how many dimensions of outputs?? #TODO figure this out
+        self._pcPrint("outputs", np.shape(self.targetData))
 
         w = None
         if standard_weight_value != None:
@@ -222,6 +224,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         else:
             w = np.random.rand(features, outputs)
         # self.initial_weights = w
+        self._pcPrint("generated Weights\n\r", w)
         return w
 
     def score(self, X, y):
@@ -258,4 +261,4 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
-        return self.weights
+        return np.reshape(self.weights, (1,-1))[0]
