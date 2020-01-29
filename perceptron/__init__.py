@@ -146,6 +146,8 @@ def voting():
     mat = Arff("../data/perceptron/vote.arff", label_count=1)
     np_mat = mat.data
 
+    avg = []
+
     for iteration in range(5):
         print("xxxxxxxxxxx   " + str(iteration) + "  xxxxxxxx")
         training, testing = _shuffle_split(mat.data, .3)
@@ -168,6 +170,15 @@ def voting():
         print(weights)
         sort_weights = sorted(zip(weights, list(range(len(weights)))), key=lambda x: abs(x[0]), reverse=True)
         print("sorted:\r\n", sort_weights)
+
+        scores = P5Class.getTrace().getColumns("epochScore")
+        print('scores', scores)
+        avg.append((float(scores[-2][0]) - float(scores[0][0])) / len(scores))
+    
+    print('avg', avg)
+    grapher = Grapher()
+    grapher.graph(list(range(len(avg))), avg, labels=[1]*len(avg))
+    grapher.show("AverageScores.png")
     
 
 

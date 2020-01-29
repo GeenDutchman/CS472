@@ -29,19 +29,26 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
                 count = self.count
             return self.container[key][count]
 
-        def getColumns(self, *keys, fill='???'):
+        def getColumns(self, *keys):
             results = []
             for c in range(self.count - 1):
-                results.append([])
+                this_row = []
                 for k in keys:
+                    print(k)
                     if c >= len(self.container[k]):
-                        if fill is None:
-                            return np.array(results)
-                        else:
-                            results[c].append(fill)
+                        # if fill is None:
+                        #     return np.array(results)
+                        # else:
+                        #     results[c].append(fill)
+                        return np.array(results) # results[c].append(0)
                     else:
-                        results[c].append(self.container[k][c])
+                        this_row.append(self.container[k][c])
+                results.append(this_row)
             return np.array(results)
+            # results = []
+            # for k in keys:
+            #     results.append(self.container[k])
+            # return np.array(results).reshape(1, -1)
 
 
 
