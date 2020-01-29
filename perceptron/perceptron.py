@@ -34,7 +34,6 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             for c in range(self.count - 1):
                 this_row = []
                 for k in keys:
-                    print(k)
                     if c >= len(self.container[k]):
                         # if fill is None:
                         #     return np.array(results)

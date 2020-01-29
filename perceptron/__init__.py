@@ -3,6 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from sklearn.base import BaseEstimator
+
 from perceptron import PerceptronClassifier
 from arff import Arff
 from graph_tools import *
@@ -51,10 +53,10 @@ def evaluation():
     print("Final Weights =", P2Class.get_weights())
     # print(P2Class)
 
-def seperable():
-    print("----------------seperable-----------------------")
+def separable():
+    print("----------------separable-----------------------")
 
-    mat = Arff("./seperableIsSquare.arff", label_count=1)
+    mat = Arff("./separableIsSquare.arff", label_count=1)
     np_mat = mat.data
     data = mat[:, :-1]
     labels = mat[:, -1].reshape(-1, 1)
@@ -80,16 +82,16 @@ def seperable():
     y = lambda x: (-w[0]/w[1])*x - (w[2]/w[1])
 
     grapher = Grapher()
-    grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1])
+    grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1], title="Separable")
     grapher.add_function(y)
 
-    grapher.show("seperable.png")
+    grapher.show("separable.svg")
 
 
 
 
-def inseperable():
-    print("----------------Inseperable-----------------------")
+def inseparable():
+    print("----------------Inseparable-----------------------")
 
     mat = Arff("./impossible.arff", label_count=1)
     np_mat = mat.data
@@ -110,10 +112,10 @@ def inseperable():
     y = lambda x: (-w[0]/w[1])*x - (w[2]/w[1])
 
     grapher = Grapher()
-    grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1])
+    grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1], title="Inseparable")
     grapher.add_function(y)
 
-    grapher.show("Inseperable.png")
+    grapher.show("Inseparable.svg")
 
     # print(P4Class)
 
@@ -177,14 +179,13 @@ def voting():
     
     print('avg', avg)
     grapher = Grapher()
-    grapher.graph(list(range(len(avg))), avg, labels=[1]*len(avg))
-    grapher.show("AverageScores.png")
+    grapher.graph(list(range(len(avg))), avg, labels=[1]*len(avg), points=False, title="Average Scores", xlabel="Iteration", ylabel="score")
+    grapher.show("AverageScores.svg")
     
 
-
 basic()
-# debug()
-# evaluation()
-# seperable()
-# inseperable()
+debug()
+evaluation()
+separable()
+inseparable()
 voting()
