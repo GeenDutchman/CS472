@@ -1,9 +1,11 @@
 #!/bin/python3
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from perceptron import PerceptronClassifier
 from arff import Arff
+from graph_tools import *
 
 def basic():
     print("-------------basic---------------")
@@ -56,17 +58,43 @@ def seperable():
     np_mat = mat.data
     data = mat[:, :-1]
     labels = mat[:, -1].reshape(-1, 1)
+    print(data[:, 1])
+    print(labels)
 
     ### Make the Classifier #####
     P3Class = None
     for lr in range(10, 0, -1):
         P3Class = PerceptronClassifier(lr=0.1*lr, shuffle=False)
-        P3Class.fit(data, labels)
+        P3Class.fit(data, labels, standard_weight_value=None)
         Accuracy = P3Class.score(data, labels)
         print("Learning Rate = ", 0.1*lr)
         print("Accuracy = [{:.2f}]".format(Accuracy))
         print("Epochs = ", P3Class.get_epochs_trained())
     # print(P3Class)
+
+
+    ## could not get graphing to work in time...
+    # graph(data[:, 0], data[:, 1], labels=mat[:, -1])
+
+    x = np.linspace(-1, 1, 100)
+    w = P3Class.get_weights()
+    w0 = w[0]
+    w1 = w[1]
+    w2 = w[2]
+    y = lambda x: (-w0/w1)*x - (w2/w1)
+    plt.plot(x, y(x))
+    plt.scatter(data[:, 0], data[:, 1], c=mat[:, -1])
+
+    plt.show()
+
+    grapher = Grapher()
+    grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1])
+    grapher.add_function(y)
+
+    grapher.show("try.png")
+
+
+
 
 def inseperable():
     print("----------------Inseperable-----------------------")
@@ -80,7 +108,7 @@ def inseperable():
     P4Class = None
     for lr in range(10, 0, -1):
         P4Class = PerceptronClassifier(lr=0.1*lr, deterministic=10, shuffle=False)
-        P4Class.fit(data, labels)
+        P4Class.fit(data, labels, standard_weight_value=None)
         Accuracy = P4Class.score(data, labels)
         print("Learning Rate = ", 0.1*lr)
         print("Accuracy = [{:.2f}]".format(Accuracy))
@@ -135,12 +163,14 @@ def voting():
         tAccuracy = P5Class.score(tData, tLabels)
         print("Test Accuracy = [{:.2f}]".format(tAccuracy))
         print("Test Epochs = ", P5Class.get_epochs_trained())
+
+        print(P5Class.get_weights())
     
 
 
-basic()
-debug()
-evaluation()
+# basic()
+# debug()
+# evaluation()
 seperable()
-inseperable()
-voting()
+# inseperable()
+# voting()
