@@ -29,12 +29,18 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
                 count = self.count
             return self.container[key][count]
 
-        def getColumns(self, *keys):
+        def getColumns(self, *keys, fill='???'):
             results = []
             for c in range(self.count - 1):
                 results.append([])
                 for k in keys:
-                    results[c].append(self.container[k][c])
+                    if c >= len(self.container[k]):
+                        if fill is None:
+                            return np.array(results)
+                        else:
+                            results[c].append(fill)
+                    else:
+                        results[c].append(self.container[k][c])
             return np.array(results)
 
 
@@ -61,7 +67,10 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             out = out + "\n\r"
             for i in range(self.count):
                 for key in self.container:
-                    out = out + str(self.container[key][i]) + '\t'
+                    if i >= len(self.container[key]):
+                        out = out + "???" + '\t'
+                    else:
+                        out = out + str(self.container[key][i]) + '\t'
                     # print(self.container[key][i], end='\t')
                 out = out + "\n\r"
                 # print()
@@ -178,10 +187,14 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
 
         self.epochCount = 0
+        self.trainTrace.addTrace("epochScore", self.score(X, y))
+
         while (self.epochs is not None and self.epochCount < self.epochs) or (self.epochs is None and not self._stopper(self.trainTrace)[1]):
             self._stochastic(self.trainTrace)
             if self.shuffle:
                 self._shuffle_data()
+
+            self.trainTrace.addTrace("epochScore", self.score(X, y))
             self.epochCount = self.epochCount + 1
 
         self.trainTrace.endTrace()
