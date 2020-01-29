@@ -19,7 +19,7 @@ def basic():
     pc = PerceptronClassifier(lr=1)
     # print(pc)
     print(pc.fit(x, y).score(np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]]), np.array([[0],[0],[1],[1]])))
-    # print(pc)
+    print(pc)
 
 def debug():
     print("------------arff-------------------")
@@ -76,22 +76,14 @@ def seperable():
     ## could not get graphing to work in time...
     # graph(data[:, 0], data[:, 1], labels=mat[:, -1])
 
-    x = np.linspace(-1, 1, 100)
     w = P3Class.get_weights()
-    w0 = w[0]
-    w1 = w[1]
-    w2 = w[2]
-    y = lambda x: (-w0/w1)*x - (w2/w1)
-    plt.plot(x, y(x))
-    plt.scatter(data[:, 0], data[:, 1], c=mat[:, -1])
-
-    plt.show()
+    y = lambda x: (-w[0]/w[1])*x - (w[2]/w[1])
 
     grapher = Grapher()
     grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1])
     grapher.add_function(y)
 
-    grapher.show("try.png")
+    grapher.show("seperable.png")
 
 
 
@@ -113,6 +105,15 @@ def inseperable():
         print("Learning Rate = ", 0.1*lr)
         print("Accuracy = [{:.2f}]".format(Accuracy))
         print("Epochs = ", P4Class.get_epochs_trained())
+
+    w = P4Class.get_weights()
+    y = lambda x: (-w[0]/w[1])*x - (w[2]/w[1])
+
+    grapher = Grapher()
+    grapher.graph(data[:, 0], data[:, 1], labels=mat[:, -1])
+    grapher.add_function(y)
+
+    grapher.show("Inseperable.png")
 
     # print(P4Class)
 
@@ -162,15 +163,17 @@ def voting():
         tLabels = testing[:, -1].reshape(-1, 1)
         tAccuracy = P5Class.score(tData, tLabels)
         print("Test Accuracy = [{:.2f}]".format(tAccuracy))
-        print("Test Epochs = ", P5Class.get_epochs_trained())
 
-        print(P5Class.get_weights())
+        weights = P5Class.get_weights()
+        print(weights)
+        sort_weights = sorted(zip(weights, list(range(len(weights)))), key=lambda x: abs(x[0]), reverse=True)
+        print("sorted:\r\n", sort_weights)
     
 
 
-# basic()
+basic()
 # debug()
 # evaluation()
-seperable()
+# seperable()
 # inseperable()
-# voting()
+voting()

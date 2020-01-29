@@ -198,6 +198,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             array, shape (n_samples,)
                 Predicted target values per element in X.
         """
+        self.executeTrace = PerceptronClassifier.PerceptronTrace()
         augmented = self._add_bias_node(X)
         for dataPoint in augmented:
             self._for_data_point(dataPoint, self.executeTrace)
