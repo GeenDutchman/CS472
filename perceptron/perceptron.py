@@ -267,3 +267,6 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
     def get_epochs_trained(self):
         return self.epochCount
+
+    def getTrace(self):
+        return self.trainTrace
