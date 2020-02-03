@@ -1,0 +1,61 @@
+1. (40%) Implement the backpropagation algorithm. Here is the link for the practice/debug and graded/evaluation versions of a data set for which you will give your results. Turn in a file called "evaluation.csv" in the root folder of your zip file with your code. It should include all of the weights you found for the evaluation data linked above. An example of what this looks like for the practice/debug data is available here . Skeleton code link BackProp
+
+Your implementation should include:
+
+    ability to create a network structure with at least one hidden layer and an arbitrary number of nodes
+    random weight initialization (small random weights with 0 mean)
+    on-line/stochastic weight update
+    validation set stopping criterion
+    shuffle training set at each epoch
+    an option to include a momentum term
+
+2.  (13%) Use your backpropagation learner, with stochastic weight updates, for the iris classification problem.
+
+    Use one layer of hidden nodes with the number of hidden nodes being twice the number of inputs.
+    Always use bias weights to each hidden and output node. 
+    Use a random 75/25 split of the data for the training/test set.
+    Use a learning rate of .1.
+    Use a validation set (VS) for your stopping criteria for this and the remaining experiments.
+        Note that with a VS you do not stop the first epoch that the VS does not get an improved accuracy.  Rather, you keep track of the best solution so far (bssf) on the VS and consider a window of epochs. When there has been no improvement over bssf in terms of VS MSE for the length of the window, then you stop.
+         
+    Create one graph with the MSE (mean squared error) on the training set, the MSE on the VS, and the classification accuracy (% classified correctly) of the VS on the y-axis, and number of epochs on the x-axis. (Note two scales on the y-axis).
+        The results for the different measurables should be shown with a different color, line type, etc. Typical backpropagation accuracies for the Iris data set are 85-95%.  (Showing this all in one graph is best, but if you need to use two graphs, that is OK).
+         
+    For this and future labs which ask for different data set splits, you may use the scikit-learn tools for data set manipulation if you prefer.
+
+3.  (12%) For 3-5 you will use the vowel dataset, which is a more difficult task than iris.
+
+    Discuss why the vowel dataset might be a more difficult task than iris and report the baseline accuracy. Typical backpropagation accuracies for the Vowel data set are above 75%.
+    Consider carefully which of the given input features you should actually use (Train/test, speaker, and gender?) and discuss why you chose the ones you did.
+    Use one layer of hidden nodes with the number of hidden nodes being twice the number of inputs.
+    Use random 75/25 splits of the data for the training/test set.
+    Try some different learning rates (LR). 
+        For each LR find the best VS solution (in terms of VS MSE).
+        Note that each LR will probably require a different number of epochs to learn.  
+        Also note that the proper approach in this case would be to average the results of multiple random initial conditions (splits and initial weight settings) for each learning rate. To minimize work you may just do each learning rate once with the same initial conditions.
+        If you would like you may average the results of multiple initial conditions (e.g. 3) per LR, and that obviously would give more accurate results. The same applies for parts 4 and 5.  
+    Create one graph showing the number of epochs needed to get to the best VS solution on the y-axis for each tested learning rate on the x-axis.
+    Create another graph with MSE for the training set, VS, and test set, at your chosen VS stopping spot for each tested learning rate on the x-axis.
+    In general, whenever you are testing a parameter such as LR, # of hidden nodes, etc., test values until no more improvement is found. For example, if 20 hidden nodes did better than 10, you would not stop at 20, but would try 40, etc., until you saw that you no longer got improvement.
+
+4.  (10%) Using the best LR you discovered, experiment with different numbers of hidden nodes.
+
+    Start with 1 hidden nodes, then 2, and then double them for each test until you get no more improvement in accuracy. 
+    For each number of hidden nodes find the best VS solution (in terms of VS MSE).  
+    Create one graph with MSE for the training set, VS, and test set, on the y-axis and # of hidden nodes on the x-axis.
+
+5. (10%) Try some different momentum terms in the learning equation using the best number of hidden nodes and LR from your earlier experiments.
+
+    Graph as in step 4 but with momentum on the x-axis and number of epochs until VS convergence on the y-axis.
+    You are trying to see how much momentum speeds up learning. 
+
+6.  (15%) Use the scikit-learn (SK) version of the MLP classifier on the iris and vowel data sets.  You do not need to go through all the steps above, nor graph results. Compare results between your version and theirs for some selection of hyper-parameters. Try different hyper-parameters and comment on their effect. At a minimum, try
+
+    number of hidden nodes and layers
+    different activation functions
+    learning rate
+    regularization and parameters
+    momentum (and try nesterov)
+    early stopping
+
+Pick a data set of your choice and learn it with the SK version, and play with the hyper-parameters to get the best accuracy possible. Use a grid or random search approach across a reasonable subset of hyper-parameters from the above and report your best accuracy and hyper-parameters for your chosen data set.
