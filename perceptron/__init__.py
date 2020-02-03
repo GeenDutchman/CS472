@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from sklearn.base import BaseEstimator
+from sklearn.linear_model import Perceptron
 
 from perceptron import PerceptronClassifier
 from arff import Arff
@@ -182,6 +182,9 @@ def voting():
     grapher.graph(list(range(len(avg))), avg, labels=[1]*len(avg), points=False, title="Average Scores", xlabel="Iteration", ylabel="score")
     grapher.show("AverageScores.svg")
     
+
+p = Perceptron()
+p.f
 
 basic()
 debug()
