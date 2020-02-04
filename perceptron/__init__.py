@@ -183,12 +183,11 @@ def voting():
     grapher.show("AverageScores.svg")
     
 
-p = Perceptron()
-p.f
+
 
 basic()
-debug()
-evaluation()
-separable()
-inseparable()
-voting()
+# debug()
+# evaluation()
+# separable()
+# inseparable()
+# voting()

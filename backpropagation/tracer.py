@@ -1,4 +1,4 @@
-import numpy as numpy
+import numpy as np
 
 class SimpleTracer:
     def __init__(self):
@@ -54,4 +54,4 @@ class SimpleTracer:
         out = out + "\n\r"
         return out
 
-        
+
