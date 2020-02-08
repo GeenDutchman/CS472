@@ -34,6 +34,11 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             return np.random.uniform(-1, 1, (num_send_nodes + 1, num_recv_nodes))
 
         def out(self, x):
+            x_shape = np.shape(x)
+            ones_shape = (1,) +  x_shape[1:]
+            ones_array = np.ones(ones_shape)
+            print("precat", x, x_shape, ones_shape, ones_array)
+            x = np.concatenate(x * 1.0, ones_array)
             print("out", x, "\n\r", self._weights)
             net = np.dot(x, self._weights)
             firing = self._out_func(net)
@@ -95,7 +100,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         print("shapes", np.shape(X), np.shape(y))
         self.initialize_weights(np.shape(X)[1], np.shape(y)[1], initial_weights, standard_weight=standard_weight)
 
-        self.data = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
+        # self.data = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
+        self.data = np.array(X)
         print("data\r\n", self.data)
         # target = y[0]
         print("layers\r\n", self.layers)
