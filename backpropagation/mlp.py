@@ -16,6 +16,13 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
     class MLPWeightsLayer:
         serial = 0
 
+        '''
+                   o1 o2
+                f1 #  #
+                f2 #  #
+                B  #  #
+        '''
+
         def __init__(self, tracer, num_send_nodes, num_recv_nodes, output_func, delta_func, initial_weights=None, standard_weight=None):
             self._weights = self.__initialize_weights__(num_send_nodes, num_recv_nodes, initial_weights, standard_weight)
             self._deltas = np.zeros(np.shape(self._weights))
@@ -38,12 +45,15 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             ones_shape = (1,) +  x_shape[1:]
             ones_array = np.ones(ones_shape)
             print("precat", x, x_shape, ones_shape, ones_array)
-            x = np.concatenate(x * 1.0, ones_array)
-            print("out", x, "\n\r", self._weights)
-            net = np.dot(x, self._weights)
+            x_aug = np.concatenate((x, ones_array))
+            print("out", x_aug, "\n\r", self._weights)
+            net = np.dot(x_aug, self._weights)
             firing = self._out_func(net)
             self.tracer.addTrace("layer", self.serial_num).addTrace("net", net).addTrace("firing", firing)
             return firing
+
+        def backProp(self, learn_rate, forward_layer, target=None):
+            pass
 
         def flush(self):
             self._weights = self._weights + self._deltas
