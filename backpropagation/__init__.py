@@ -6,8 +6,10 @@ from mlp import MLPClassifier
 def basic():
     print("-------------basic---------------")
 
-    x = np.array([[0,0],[0,1], [1, 1]])
-    y = np.array([[1],[0], [0]])
+    # x = np.array([[0,0],[0,1], [1, 1]])
+    # y = np.array([[1],[0], [0]])
+    x = np.array([[0, 0]])
+    y = np.array([[1]])
 
     # print(x)
     # print(y)
