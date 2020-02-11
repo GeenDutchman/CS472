@@ -56,7 +56,10 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             if target:
                 self._delta_part = (target - self.firing) * f_prime_forward
                 print("delta_part", self._delta_part)
-            pass
+            else:
+                self._delta_part = (forward_layer._delta_part * forward_layer._weights) * f_prime_forward # TODO: check if this math is right
+                print("delta_part", self._delta_part)
+            return self
 
         def flush(self):
             self._weights = self._weights + self._deltas
@@ -123,7 +126,9 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             out = dataPoint
             for l in self.layers:
                 out = l.out(out)
-            back = self.layers[-1].backProp(self.lr, None, y)
+            back = self.layers[-1].backProp(self.lr, None, target=y)
+            for layer in reversed(self.layers[:-1]):
+                 back = layer.backProp(self.lr, back)
             self.tracer.nextLevel()
 
 
@@ -150,14 +155,14 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         """
         if initial_weights:
             for w in initial_weights:
-                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, -1, -1, self.__sigmoid__, lambda x: x, w))
+                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, -1, -1, self.__sigmoid__, self.__sigmoid_prime__, w))
         else:
             prev = inputs
             for i in self.hidden_layer_widths:
-                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, i, self.__sigmoid__, lambda x: x, standard_weight=standard_weight))
+                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, i, self.__sigmoid__, self.__sigmoid_prime__, standard_weight=standard_weight))
                 prev = i
 
-            self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, outputs, self.__sigmoid__, lambda x: x, standard_weight=standard_weight))
+            self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, outputs, self.__sigmoid__, self.__sigmoid_prime__, standard_weight=standard_weight))
 
         # return [0]
 
