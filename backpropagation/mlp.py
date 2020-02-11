@@ -95,7 +95,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         return (1 + np.e ** (-1 * net)) ** -1
 
     def __sigmoid_prime__(self, net):
-        return self.__sigmoid__(net) * ( 1 - self.__sigmoid__(net))
+        unprime_out = self.__sigmoid__(net)
+        return unprime_out * ( 1 - unprime_out)
 
 
     def fit(self, X, y, initial_weights=None, standard_weight=None):
