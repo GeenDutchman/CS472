@@ -33,7 +33,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             MLPClassifier.MLPWeightsLayer.serial = MLPClassifier.MLPWeightsLayer.serial + 1
 
         def __initialize_weights__(self, num_send_nodes, num_recv_nodes, initial_weights=None, standard_weight=None):
-            print("in:" , num_send_nodes, " out:", num_recv_nodes)
+            # print("in:" , num_send_nodes, " out:", num_recv_nodes)
             if initial_weights != None:
                 return np.concatenate(initial_weights, np.random.normal()) # TODO: CHECK THE SIZE for the random
             if standard_weight != None:
@@ -44,15 +44,18 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             x_shape = np.shape(x)
             ones_shape = (1,) +  x_shape[1:]
             ones_array = np.ones(ones_shape)
-            print("precat", x, x_shape, ones_shape, ones_array)
             x_aug = np.concatenate((x, ones_array))
-            print("out", x_aug, "\n\r", self._weights)
-            net = np.dot(x_aug, self._weights)
-            firing = self._out_func(net)
-            self.tracer.addTrace("layer", self.serial_num).addTrace("net", net).addTrace("firing", firing)
-            return firing
+            self.net = np.dot(x_aug, self._weights)
+            self.firing = self._out_func(self.net)
+            self.tracer.addTrace("layer", self.serial_num).addTrace("net", self.net).addTrace("firing", self.firing)
+            return self.firing
 
         def backProp(self, learn_rate, forward_layer, target=None):
+            f_prime_forward = self._delta_func(self.net)
+            print('prime forward', f_prime_forward)
+            if target:
+                self._delta_part = (target - self.firing) * f_prime_forward
+                print("delta_part", self._delta_part)
             pass
 
         def flush(self):
@@ -107,18 +110,20 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        print("shapes", np.shape(X), np.shape(y))
+        # print("shapes", np.shape(X), np.shape(y))
         self.initialize_weights(np.shape(X)[1], np.shape(y)[1], initial_weights, standard_weight=standard_weight)
 
         # self.data = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
         self.data = np.array(X)
-        print("data\r\n", self.data)
+        # print("data\r\n", self.data)
         # target = y[0]
-        print("layers\r\n", self.layers)
+        # print("layers\r\n", self.layers)
         for dataPoint in self.data:
             out = dataPoint
             for l in self.layers:
                 out = l.out(out)
+            back = self.layers[-1].backProp(self.lr, None, y)
+            self.tracer.nextLevel()
 
 
         self.tracer.endTrace()
