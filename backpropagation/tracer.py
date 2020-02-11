@@ -54,62 +54,33 @@ class SimpleTracer:
         out = out + "\n\r"
         return out
 
-'''
-deprecated
-incomplete
-'''
-class ComplexTracer:
+
+class ComplexTracer(SimpleTracer):
     def __init__(self):
-        self.iterations = []
+        super().__init__()
+        self._iterations = []
+        self._curr_iter = 0
+        self._iterations.append([self.container, self.count])
+
+
+    def nextIteration(self):
+        self._iterations[self._curr_iter][1] = self.count # save current count
         self.container = {}
-        self.iterations.append(self.container)
-        self._run_key = "iteration"
-        self._layer_key = "layer"
-        self._count_key = "count"
-        self.addTrace(self._run_key, 0)
-        self.addTrace(self._count_key, 0)
-
-    def _top_off(self, array, length):
-        return array + [None] * (n - len(array))
-
-
-
-    def addTrace(self, key, result):
-        if key not in self.container:
-            self.container[key] = true, [None] * self.getElement(self._count_key)
-        self.container[key][1].append(result)
-        if not self.container[key][0]:
-            self.container[key] = true, self.container[key][1]
-        else:
-            count = self.getElement(self._count_key)
-            for okey in self.container and okey != key:
-                self.container[okey] = false, self._top_off(self.container[okey][1])
-
+        self.count = 0
+        self._iterations.append([self.container, self.count])
+        self._curr_iter = len(self.container)
         return self
 
-    def getElement(self, key, count=-1, iteration=-1):
-        return self.iterations[iteration][key][1][count]
-
-    def getColumns(self, *keys, iteration=-1):
-        results = []
-        for k in keys:
-            results.append(self.iterations[iteration][key][1])
-        return np.transpose(results)
-
-    def getCurrentCount(self):
-        return self.getElement(self._count_key)
-
-    def endTrace(self):
-        for key in self.container:
-            self.container[key][1].append('-')
-        self.addTrace(self._count_key, self.getElement(self._count_key) + 1)
-
-    def nextLevel(self):
-        self.count = self.count + 1
+    def loadIteration(self, index=-1):
+        self._iterations[self._curr_iter][1] = self.count # save current count
+        self.container = self._iterations[index][0]
+        self.count = self._iterations[index][1]
+        self._curr_iter = index
+        return self
 
     def __repr__(self):
-        for key in self.container:
-            out = out + str(key) + ',\t'
-        out = out + "\n\r"
-        for iteration in self.iterations:
-            
+        out = ''
+        for index in range(len(self._iterations)):
+            self.loadIteration(index)
+            out = out + str(super.__repr__())
+        return out
