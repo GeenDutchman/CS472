@@ -51,14 +51,15 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             return self.firing
 
         def backProp(self, learn_rate, forward_layer, target=None):
-            f_prime_forward = self._delta_func(self.net)
-            print('prime forward', f_prime_forward)
+            f_prime_forward = self._delta_func(self.net).reshape(-1, 1)
+            print('prime forward', f_prime_forward, np.shape(f_prime_forward))
             if target:
                 self._delta_part = (target - self.firing) * f_prime_forward
                 print("delta_part", self._delta_part)
             else:
-                self._delta_part = (forward_layer._delta_part * forward_layer._weights) * f_prime_forward # TODO: check if this math is right
-                print("delta_part", self._delta_part)
+                dot_product = np.dot(forward_layer._weights, forward_layer._delta_part)[:-1]
+                self._delta_part = dot_product * f_prime_forward # TODO: check if this math is right
+                print("delta_part", self._delta_part, dot_product.shape )
             return self
 
         def flush(self):
