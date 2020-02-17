@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-from tracer import SimpleTracer
+from tracer import SimpleTracer, ComplexTracer
 
 ### NOTE: The only methods you are required to have are:
 #   * predict
@@ -41,30 +41,40 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             return np.random.uniform(-1, 1, (num_send_nodes + 1, num_recv_nodes))
 
         def out(self, x):
-            x_shape = np.shape(x)
-            ones_shape = (1,) +  x_shape[1:]
+            self.tracer.nextLevel()
+            self.x_aug = np.atleast_2d(x)
+            x_shape = np.shape(self.x_aug)
+            ones_shape = (x_shape[0],1)
             ones_array = np.ones(ones_shape)
-            x_aug = np.concatenate((x, ones_array))
-            self.net = np.dot(x_aug, self._weights)
+            print(ones_array, ones_shape, self.x_aug.shape)
+            # self.x_aug = np.atleast_2d(np.concatenate((self.x_aug, ones_array)))
+            self.x_aug = np.concatenate((self.x_aug, ones_array), axis=1)
+            print(self.x_aug, "\n", self._weights)
+            self.net = np.dot(self.x_aug, self._weights)
+            self.tracer.addTrace("in_data", self.x_aug)
             self.firing = self._out_func(self.net)
             self.tracer.addTrace("layer", self.serial_num).addTrace("net", self.net).addTrace("firing", self.firing)
             return self.firing
 
         def backProp(self, learn_rate, forward_layer, target=None):
+            self.tracer.nextLevel()
             f_prime_forward = self._delta_func(self.net).reshape(-1, 1)
-            print('prime forward', f_prime_forward, np.shape(f_prime_forward))
+            self.tracer.addTrace("layer", self.serial_num).addTrace("prime forward", f_prime_forward)
             if target:
                 self._delta_part = (target - self.firing) * f_prime_forward
-                print("delta_part", self._delta_part)
             else:
                 dot_product = np.dot(forward_layer._weights, forward_layer._delta_part)[:-1]
                 self._delta_part = dot_product * f_prime_forward # TODO: check if this math is right
-                print("delta_part", self._delta_part, dot_product.shape )
+            self.tracer.addTrace("error", self._delta_part)
+            self._deltas = learn_rate * np.dot(self._delta_part, self.x_aug)
+            self.tracer.addTrace("delta", self._deltas)
             return self
 
-        def flush(self):
-            self._weights = self._weights + self._deltas
+        def flush(self, momentum=0):
+            self._weights = self._weights + self._deltas + momentum * self._deltas
             self._deltas = np.zeros(np.shape(self._weights))
+            self.tracer.addTrace("level", self.serial_num).addTrace("next_weights", self._weights)
+            return self
 
         def get_weights(self):
             return self._weights
@@ -92,7 +102,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.lr = lr
         self.momentum = momentum
         self.shuffle = shuffle
-        self.tracer = SimpleTracer() # initialize simple Tracer
+        # self.tracer = SimpleTracer() # initialize simple Tracer
+        self.tracer = ComplexTracer()
         self.layers = []
 
     def __sigmoid__(self, net):
@@ -130,10 +141,12 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             back = self.layers[-1].backProp(self.lr, None, target=y)
             for layer in reversed(self.layers[:-1]):
                  back = layer.backProp(self.lr, back)
-            self.tracer.nextLevel()
+            # self.tracer.endTrace()
+            for layer in self.layers:
+                layer.flush()
+            self.tracer.nextIteration()
 
 
-        self.tracer.endTrace()
         return self
 
     def predict(self, X):
