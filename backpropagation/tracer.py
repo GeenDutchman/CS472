@@ -4,10 +4,11 @@ class SimpleTracer:
     def __init__(self):
         self.container = {}
         self.count = 0
+        self._val_unavailable = "???"
 
     def addTrace(self, key, result):
         if key not in self.container:
-            self.container[key] = []
+            self.container[key] = [self._val_unavailable] * (self.count - 1)
         self.container[key].append(result)
         return self
 
@@ -47,7 +48,7 @@ class SimpleTracer:
         for i in range(self.count):
             for key in self.container:
                 if i >= len(self.container[key]):
-                    out = out + "???" + '\t'
+                    out = out + self._val_unavailable + '\t'
                 else:
                     out = out + str(self.container[key][i]) + '\t'
             out = out + "\n\r"
@@ -78,9 +79,10 @@ class ComplexTracer(SimpleTracer):
         self._curr_iter = index
         return self
 
+    # @classmethod
     def __repr__(self):
         out = ''
         for index in range(len(self._iterations)):
             self.loadIteration(index)
-            out = out + str(super.__repr__())
+            out = out + str(super().__repr__())
         return out
