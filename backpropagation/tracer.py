@@ -3,49 +3,48 @@ import numpy as np
 class SimpleTracer:
     def __init__(self):
         self.container = {}
-        self.count = 0
+        # self.count = 0
+        self._longest_key = None
         self._val_unavailable = "???"
 
     def addTrace(self, key, result):
         if key not in self.container:
-            self.container[key] = [self._val_unavailable] * (self.count - 1)
+            self.container[key] = []
         self.container[key].append(result)
+        if (self._longest_key is None or len(self.container[key]) > len(self.container[self._longest_key])):
+            self._longest_key = key
         return self
 
     def getElement(self, key, count=-1):
-        if count == -1:
-            count = self.count
         return self.container[key][count]
+
+    def _fill_key(self, key):
+        if self._longest_key is None:
+            if key in self.container:
+                self._longest_key = key
+        elif key in self.container:
+            key_len = len(self.container[key])
+            longest = len(self.container[self._longest_key])
+            if longest > key_len:
+                self.container[key] = self.container[key] + [self._val_unavailable] * (longest - key_len)
 
     def getColumns(self, *keys):
         results = []
-        for c in range(self.count - 1):
-            this_row = []
-            for k in keys:
-                if c >= len(self.container[k]):
-                    return np.array(results)
-                else:
-                    this_row.append(self.container[k][c])
-            results.append(this_row)
-        return np.array(results)
-
-    def getCurrentCount(self):
-        return self.count
+        for k in keys:
+            self._fill_key(k)
+            results.append(self.container[k])
+        return np.transpose(results)
 
     def endTrace(self):
         for key in self.container:
-            self.container[key].append('-')
-        self.count = self.count + 1
-
-    def nextLevel(self):
-        self.count = self.count + 1
+            self.addTrace(key, '-')
 
     def __repr__(self):
         out = ''
         for key in self.container:
             out = out + str(key) + '\t'
         out = out + "\n\r"
-        for i in range(self.count):
+        for i in range(len(self.container[self._longest_key])):
             for key in self.container:
                 if i >= len(self.container[key]):
                     out = out + self._val_unavailable + '\t'
@@ -61,21 +60,21 @@ class ComplexTracer(SimpleTracer):
         super().__init__()
         self._iterations = []
         self._curr_iter = 0
-        self._iterations.append([self.container, self.count])
+        self._iterations.append([self.container, self._longest_key])
 
 
     def nextIteration(self):
-        self._iterations[self._curr_iter][1] = self.count # save current count
+        self._iterations[self._curr_iter][1] = self._longest_key # save current count
         self.container = {}
-        self.count = 0
-        self._iterations.append([self.container, self.count])
+        self._longest_key = None
+        self._iterations.append([self.container, self._longest_key])
         self._curr_iter = len(self.container)
         return self
 
     def loadIteration(self, index=-1):
-        self._iterations[self._curr_iter][1] = self.count # save current count
+        self._iterations[self._curr_iter][1] = self._longest_key # save current count
         self.container = self._iterations[index][0]
-        self.count = self._iterations[index][1]
+        self._longest_key = self._iterations[index][1]
         self._curr_iter = index
         return self
 
