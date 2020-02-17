@@ -9,9 +9,11 @@ class SimpleTracer:
 
     def addTrace(self, key, result):
         if key not in self.container:
-            self.container[key] = []
+            fill_len =  0 if self._longest_key is None else len(self.container[self._longest_key]) - 1
+            self.container[key] = [self._val_unavailable] * fill_len
         self.container[key].append(result)
-        if (self._longest_key is None or len(self.container[key]) > len(self.container[self._longest_key])):
+        key_len = len(self.container[key])
+        if self._longest_key is None or key_len > len(self.container[self._longest_key]):
             self._longest_key = key
         return self
 
@@ -35,24 +37,33 @@ class SimpleTracer:
             results.append(self.container[k])
         return np.transpose(results)
 
+    def nextLevel(self):
+        for k in self.container:
+            self._fill_key(k)
+
     def endTrace(self):
         for key in self.container:
             self.addTrace(key, '-')
 
     def __repr__(self):
+        if self._longest_key is None:
+            return 'Trace is empty from here\r\n'
         out = ''
+        tabs = '\t\t'
+        newline = '\n\r'
         for key in self.container:
-            out = out + str(key) + '\t'
-        out = out + "\n\r"
+            out = out + str(key) + tabs
+        out = out + newline
         for i in range(len(self.container[self._longest_key])):
             for key in self.container:
                 if i >= len(self.container[key]):
-                    out = out + self._val_unavailable + '\t'
+                    out = out + self._val_unavailable + tabs
                 else:
-                    out = out + str(self.container[key][i]) + '\t'
-            out = out + "\n\r"
-        out = out + "\n\r"
+                    out = out + str(self.container[key][i]).replace('\n', '\\') + tabs
+            out = out + newline
+        out = out + newline
         return out
+        
 
 
 class ComplexTracer(SimpleTracer):
@@ -65,10 +76,10 @@ class ComplexTracer(SimpleTracer):
 
     def nextIteration(self):
         self._iterations[self._curr_iter][1] = self._longest_key # save current count
-        self.container = {}
+        self.container = dict()
         self._longest_key = None
         self._iterations.append([self.container, self._longest_key])
-        self._curr_iter = len(self.container)
+        self._curr_iter = len(self._iterations) - 1
         return self
 
     def loadIteration(self, index=-1):
