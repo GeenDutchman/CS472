@@ -46,10 +46,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             x_shape = np.shape(self.x_aug)
             ones_shape = (x_shape[0],1)
             ones_array = np.ones(ones_shape)
-            print(ones_array, ones_shape, self.x_aug.shape)
-            # self.x_aug = np.atleast_2d(np.concatenate((self.x_aug, ones_array)))
             self.x_aug = np.concatenate((self.x_aug, ones_array), axis=1)
-            print(self.x_aug, "\n", self._weights)
             self.net = np.dot(self.x_aug, self._weights)
             self.tracer.addTrace("in_data", self.x_aug)
             self.firing = self._out_func(self.net)
@@ -60,7 +57,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             self.tracer.nextLevel()
             f_prime_forward = self._delta_func(self.net).reshape(-1, 1)
             self.tracer.addTrace("layer", self.serial_num).addTrace("prime forward", f_prime_forward)
-            if target:
+            if target is not None:
                 self._delta_part = (target - self.firing) * f_prime_forward
             else:
                 dot_product = np.dot(forward_layer._weights, forward_layer._delta_part)[:-1]
@@ -71,7 +68,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             return self
 
         def flush(self, momentum=0):
-            self._weights = self._weights + self._deltas + momentum * self._deltas
+            self._weights = self._weights + np.transpose(self._deltas + momentum * self._deltas)
             self._deltas = np.zeros(np.shape(self._weights))
             self.tracer.addTrace("level", self.serial_num).addTrace("next_weights", self._weights)
             return self
