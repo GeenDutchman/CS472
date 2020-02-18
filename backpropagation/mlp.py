@@ -110,6 +110,20 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         unprime_out = self.__sigmoid__(net)
         return unprime_out * ( 1 - unprime_out)
 
+    def _forward_pass(self, dataPoint):
+        out = dataPoint
+        for l in self.layers:
+            out = l.out(out)
+        return out
+
+    def _backprop_and_flush(self, target):
+        back = self.layers[-1].backProp(self.lr, None, target=target)
+        for layer in reversed(self.layers[:-1]):
+                back = layer.backProp(self.lr, back)
+        # self.tracer.endTrace()
+        for layer in self.layers:
+            layer.flush()
+
 
     def fit(self, X, y, initial_weights=None, standard_weight=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
@@ -132,15 +146,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         # target = y[0]
         # print("layers\r\n", self.layers)
         for dataPoint, target in zip(self.data, y):
-            out = dataPoint
-            for l in self.layers:
-                out = l.out(out)
-            back = self.layers[-1].backProp(self.lr, None, target=target)
-            for layer in reversed(self.layers[:-1]):
-                 back = layer.backProp(self.lr, back)
-            # self.tracer.endTrace()
-            for layer in self.layers:
-                layer.flush()
+            self._forward_pass(dataPoint)
+            self._backprop_and_flush(target)
             self.tracer.nextIteration()
 
 
@@ -188,8 +195,12 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             score : float
                 Mean accuracy of self.predict(X) wrt. y.
         """
-
-        return 0
+        totals = 0
+        for dataPoint, target in zip(X, y):
+            out = self._forward_pass(dataPoint)
+            diff = target - out
+            totals = totals + (diff ** 2)
+        return np.sum(totals) / np.shape(y)[0]
 
     def _shuffle_data(self, X, y):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
