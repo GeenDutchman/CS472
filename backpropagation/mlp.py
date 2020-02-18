@@ -152,8 +152,10 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.data = np.array(X)
 
         epochCount = 0
+        bssf = [np.inf, self.get_weights()]
+        score = bssf[0]
 
-        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and True):
+        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] >= score):
             self._shuffle_data(self.data, y, 0)
             # for dataPoint, target in zip(self.data, y):
             for index in self.train_indicies:
@@ -161,8 +163,10 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
                 self._backprop_and_flush(y[index])
                 self.tracer.nextIteration()
 
-            print("score", self.score([self.data[x] for x in self.test_indicies], [y[x] for x in self.test_indicies]))
+            score = self.score([self.data[x] for x in self.test_indicies], [y[x] for x in self.test_indicies])
+            print("score", score)
             print("predict", self.predict([self.data[x] for x in self.test_indicies]))
+            epochCount = epochCount + 1
 
 
         return self
