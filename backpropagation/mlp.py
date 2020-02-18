@@ -116,25 +116,25 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             out = l.out(out)
         return out
 
-    def _backprop_and_flush(self, target):
+    def _backprop_and_flush(self, target, momentum=0):
         back = self.layers[-1].backProp(self.lr, None, target=target)
         for layer in reversed(self.layers[:-1]):
                 back = layer.backProp(self.lr, back)
         # self.tracer.endTrace()
         for layer in self.layers:
-            layer.flush()
+            layer.flush(momentum)
 
 
     def fit(self, X, y, initial_weights=None, standard_weight=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
-        Args:
-            X (array-like): A 2D numpy array with the training data, excluding targets
-            y (array-like): A 2D numpy array with the training targets
-            initial_weights (array-like): allows the user to provide initial weights
+            Args:
+                X (array-like): A 2D numpy array with the training data, excluding targets
+                y (array-like): A 2D numpy array with the training targets
+                initial_weights (array-like): allows the user to provide initial weights
 
-        Returns:
-            self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
+            Returns:
+                self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
         # print("shapes", np.shape(X), np.shape(y))
@@ -163,7 +163,11 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             array, shape (n_samples,)
                 Predicted target values per element in X.
         """
-        pass
+        outs = []
+        for dataPoint in X:
+            outs.append(self._forward_pass(dataPoint))
+        outs = np.reshape(outs, (len(outs), -1))
+        return outs, np.shape(outs)
 
     def initialize_weights(self, inputs, outputs, initial_weights=None, standard_weight=None):
         """ Initialize weights for perceptron. Don't forget the bias!
@@ -171,7 +175,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         Returns:
 
         """
-        if initial_weights:
+        if initial_weights is not None:
             for w in initial_weights:
                 self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, -1, -1, self.__sigmoid__, self.__sigmoid_prime__, w))
         else:
@@ -211,7 +215,10 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
-        pass
+        result = []
+        for layer in self.layers:
+            result.append(layer.getWeights())
+        return result
 
 
     def __repr__(self):
