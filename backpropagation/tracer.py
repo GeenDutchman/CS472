@@ -76,14 +76,15 @@ class ComplexTracer(SimpleTracer):
 
     def nextIteration(self):
         self._iterations[self._curr_iter][1] = self._longest_key # save current count
-        self.container = dict()
-        self._longest_key = None
-        self._iterations.append([self.container, self._longest_key])
+        self._iterations.append([dict(), None])
+        self.container = self._iterations[-1][0]
+        self._longest_key = self._iterations[-1][1]
         self._curr_iter = len(self._iterations) - 1
         return self
 
     def loadIteration(self, index=-1):
         self._iterations[self._curr_iter][1] = self._longest_key # save current count
+        print(self._iterations[index][0])
         self.container = self._iterations[index][0]
         self._longest_key = self._iterations[index][1]
         self._curr_iter = index
