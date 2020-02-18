@@ -89,6 +89,14 @@ class ComplexTracer(SimpleTracer):
         self._curr_iter = index
         return self
 
+    def iteration_to_string(self, index=-1):
+        out = ''
+        old_index = self._curr_iter
+        self.loadIteration(index)
+        out = out + str(super().__repr__())
+        self.loadIteration(old_index)
+        return out
+
     # @classmethod
     def __repr__(self):
         out = ''
