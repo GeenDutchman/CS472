@@ -54,8 +54,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             ones_shape = (x_shape[0],1)
             ones_array = np.ones(ones_shape)
             self.x_aug = np.concatenate((self.x_aug, ones_array), axis=1)
+            self.tracer.addTrace("in_data", self.x_aug).addTrace("weights", self._weights)
             self.net = np.dot(self.x_aug, self._weights)
-            self.tracer.addTrace("in_data", self.x_aug)
             self.firing = self._out_func(self.net)
             self.tracer.addTrace("layer", self.serial_num).addTrace("net", self.net).addTrace("firing", self.firing)
             return self.firing
@@ -270,4 +270,4 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
 
     def __repr__(self):
-        return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + str(self.tracer) + '\r\n'
+        return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + self.tracer.iteration_to_string(-1) + '\r\n'
