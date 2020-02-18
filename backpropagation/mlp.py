@@ -107,7 +107,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.momentum = momentum
         self.shuffle = shuffle
         self.train_indicies = []
-        self.test_indicies = []
+        self.verify_indicies = []
         # self.tracer = SimpleTracer() # initialize simple Tracer
         self.tracer = ComplexTracer()
         self.layers = []
@@ -135,7 +135,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             layer.flush(momentum)
 
 
-    def fit(self, X, y, initial_weights=None, standard_weight=None):
+    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
             Args:
@@ -153,21 +153,34 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
         epochCount = 0
         bssf = [np.inf, self.get_weights()]
-        score = bssf[0]
+        
+        # pre-shuffle and split into train and verify sets
+        self._shuffle_data(self.data, y, percent_verify)
+        # see how good it is initially
+        score = self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
 
-        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] >= score):
-            self._shuffle_data(self.data, y, 0)
+        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] - score > tolerance):
             # for dataPoint, target in zip(self.data, y):
             for index in self.train_indicies:
                 self._forward_pass(self.data[index])
                 self._backprop_and_flush(y[index])
-                self.tracer.nextIteration()
+                
 
-            score = self.score([self.data[x] for x in self.test_indicies], [y[x] for x in self.test_indicies])
+            score = self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
+            self.tracer.addTrace("score", score)
             print("score", score)
-            print("predict", self.predict([self.data[x] for x in self.test_indicies]))
-            epochCount = epochCount + 1
+            print("predict", self.predict([self.data[x] for x in self.verify_indicies]))
 
+            if score < bssf[0]:
+                bssf = [score, self.get_weights()]
+
+            self._shuffle_data(self.data, y, 0)
+            epochCount = epochCount + 1
+            self.tracer.endTrace()
+            self.tracer.nextIteration()
+
+        print("bssf\n", bssf)
+        self.initialize_weights(-1, -1, initial_weights=bssf[1])
 
         return self
 
@@ -226,33 +239,33 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         how_many = len(y)
         return np.inf if how_many is 0 else np.sum(totals) / how_many
 
-    def _shuffle_data(self, X, y, percent_test=0.1):
+    def _shuffle_data(self, X, y, percent_verify=0.1):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
             It might be easier to concatenate X & y and shuffle a single 2D array, rather than
              shuffling X and y exactly the same way, independently.
         """
         poss_indecies = list(range(len(X)))
         self.train_indicies = []
-        self.test_indicies = []
-        testSize = int(percent_test * len(poss_indecies))
+        self.verify_indicies = []
+        testSize = int(percent_verify * len(poss_indecies))
         if self.shuffle:
             while len(poss_indecies) > testSize:
                 index = np.random.randint(0, len(poss_indecies))
                 result = poss_indecies.pop(index)
                 self.train_indicies.append(result)
-            self.test_indicies.extend(poss_indecies)
+            self.verify_indicies.extend(poss_indecies)
         else:
             self.train_indicies = poss_indecies
             # one-hot attempt
             # start_test_index = np.random.randint(0, len(poss_indecies) - testSize)
             # self.train_indicies = poss_indecies[:start_test_index] + poss_indecies[start_test_index + testSize]
-            # self.test_indicies = poss_indecies[start_test_index:start_test_index + testSize]
+            # self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
         result = []
         for layer in self.layers:
-            result.append(layer.getWeights())
+            result.append(layer.get_weights())
         return result
 
 
