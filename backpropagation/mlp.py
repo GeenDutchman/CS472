@@ -106,6 +106,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.lr = lr
         self.momentum = momentum
         self.shuffle = shuffle
+        self.train_indicies = []
+        self.test_indicies = []
         # self.tracer = SimpleTracer() # initialize simple Tracer
         self.tracer = ComplexTracer()
         self.layers = []
@@ -144,18 +146,18 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
                 self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        # print("shapes", np.shape(X), np.shape(y))
         self.initialize_weights(np.shape(X)[1], np.shape(y)[1], initial_weights, standard_weight=standard_weight)
 
-        # self.data = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
         self.data = np.array(X)
-        # print("data\r\n", self.data)
-        # target = y[0]
-        # print("layers\r\n", self.layers)
-        for dataPoint, target in zip(self.data, y):
-            self._forward_pass(dataPoint)
-            self._backprop_and_flush(target)
+        self._shuffle_data(self.data, y, 0)
+        # for dataPoint, target in zip(self.data, y):
+        for index in self.train_indicies:
+            self._forward_pass(self.data[index])
+            self._backprop_and_flush(y[index])
             self.tracer.nextIteration()
+
+        print("score", self.score([self.data[x] for x in self.test_indicies], [y[x] for x in self.test_indicies]))
+        print("predict", self.predict([self.data[x] for x in self.test_indicies]))
 
 
         return self
@@ -173,7 +175,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         outs = []
         for dataPoint in X:
             outs.append(self._forward_pass(dataPoint))
-        outs = np.reshape(outs, (len(outs), -1))
+        if len(outs) > 0:
+            outs = np.reshape(outs, (len(outs), -1))
         return outs, np.shape(outs)
 
     def initialize_weights(self, inputs, outputs, initial_weights=None, standard_weight=None):
@@ -211,14 +214,30 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             out = self._forward_pass(dataPoint)
             diff = target - out
             totals = totals + (diff ** 2)
-        return np.sum(totals) / np.shape(y)[0]
+        how_many = len(y)
+        return np.inf if how_many is 0 else np.sum(totals) / how_many
 
-    def _shuffle_data(self, X, y):
+    def _shuffle_data(self, X, y, percent_test=0.1):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
             It might be easier to concatenate X & y and shuffle a single 2D array, rather than
              shuffling X and y exactly the same way, independently.
         """
-        pass
+        poss_indecies = list(range(len(X)))
+        self.train_indicies = []
+        self.test_indicies = []
+        testSize = int(percent_test * len(poss_indecies))
+        if self.shuffle:
+            while len(poss_indecies) > testSize:
+                index = np.random.randint(0, len(poss_indecies))
+                result = poss_indecies.pop(index)
+                self.train_indicies.append(result)
+            self.test_indicies.extend(poss_indecies)
+        else:
+            self.train_indicies = poss_indecies
+            # one-hot attempt
+            # start_test_index = np.random.randint(0, len(poss_indecies) - testSize)
+            # self.train_indicies = poss_indecies[:start_test_index] + poss_indecies[start_test_index + testSize]
+            # self.test_indicies = poss_indecies[start_test_index:start_test_index + testSize]
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
