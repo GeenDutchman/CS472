@@ -91,7 +91,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             out = out + str(self._weights) + '\r\ndeltas\r\n' + str(self._deltas) + '\r\n'
             return out
 
-    def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True):
+    def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True, deterministic=None):
         """ Initialize class with chosen hyperparameters.
 
         Args:
@@ -111,6 +111,7 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         # self.tracer = SimpleTracer() # initialize simple Tracer
         self.tracer = ComplexTracer()
         self.layers = []
+        self.deterministic = deterministic
 
     def __sigmoid__(self, net):
         return (1 + np.e ** (-1 * net)) ** -1
@@ -149,15 +150,19 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.initialize_weights(np.shape(X)[1], np.shape(y)[1], initial_weights, standard_weight=standard_weight)
 
         self.data = np.array(X)
-        self._shuffle_data(self.data, y, 0)
-        # for dataPoint, target in zip(self.data, y):
-        for index in self.train_indicies:
-            self._forward_pass(self.data[index])
-            self._backprop_and_flush(y[index])
-            self.tracer.nextIteration()
 
-        print("score", self.score([self.data[x] for x in self.test_indicies], [y[x] for x in self.test_indicies]))
-        print("predict", self.predict([self.data[x] for x in self.test_indicies]))
+        epochCount = 0
+
+        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and True):
+            self._shuffle_data(self.data, y, 0)
+            # for dataPoint, target in zip(self.data, y):
+            for index in self.train_indicies:
+                self._forward_pass(self.data[index])
+                self._backprop_and_flush(y[index])
+                self.tracer.nextIteration()
+
+            print("score", self.score([self.data[x] for x in self.test_indicies], [y[x] for x in self.test_indicies]))
+            print("predict", self.predict([self.data[x] for x in self.test_indicies]))
 
 
         return self
