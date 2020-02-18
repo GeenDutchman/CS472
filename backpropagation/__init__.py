@@ -18,6 +18,7 @@ def basic():
         pc = MLPClassifier([2], 1)
         # print(pc)
         print(pc.fit(x, y, standard_weight=1))
+        print("fake score", pc.score(x, y))
         # print(pc.fit(x, y).score(np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]]), np.array([[0],[0],[1],[1]])))
         # print(pc)
     except Exception as e:
