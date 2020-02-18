@@ -34,9 +34,16 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
         def __initialize_weights__(self, num_send_nodes, num_recv_nodes, initial_weights=None, standard_weight=None):
             # print("in:" , num_send_nodes, " out:", num_recv_nodes)
-            if initial_weights != None:
-                return np.concatenate(initial_weights, np.random.normal()) # TODO: CHECK THE SIZE for the random
-            if standard_weight != None:
+            if initial_weights is not None:
+                initial_inputs = np.shape(initial_weights)[0]
+                if initial_inputs > num_send_nodes: 
+                    # assume they know what they are doing
+                    return np.array(initial_weights)
+                else:
+                    nodes_short = (num_send_nodes + 1) - initial_inputs
+                    randos = np.random.normal((nodes_short,) + np.shape(initial_weights)[1:])
+                    return np.concatenate((initial_weights, randos))
+            if standard_weight is not None:
                 return np.full((num_send_nodes + 1, num_recv_nodes), standard_weight)
             return np.random.uniform(-1, 1, (num_send_nodes + 1, num_recv_nodes))
 
@@ -176,8 +183,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
         """
         if initial_weights is not None:
-            for w in initial_weights:
-                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, -1, -1, self.__sigmoid__, self.__sigmoid_prime__, w))
+            for weights in initial_weights:
+                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, -1, -1, self.__sigmoid__, self.__sigmoid_prime__, weights))
         else:
             prev = inputs
             for i in self.hidden_layer_widths:
