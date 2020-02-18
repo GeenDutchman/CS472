@@ -20,9 +20,9 @@ def basic():
     # print(y)
     pc = None
     try:
-        pc = MLPClassifier([2], 1, shuffle=False)
+        pc = MLPClassifier([2], 1, shuffle=False, deterministic=10)
         # print(pc)
-        print(pc.fit(x, y, w, 1))
+        print(pc.fit(x, y, w, 1, percent_verify=0))
         print("fake score", pc.score(tx, ty))
         # print(pc.fit(x, y).score(np.array([[0,0,0],[0,1,0],[1,0,0],[1,1,0]]), np.array([[0],[0],[1],[1]])))
         # print(pc)
@@ -46,4 +46,4 @@ def debug():
 
 
 basic()
-debug()
+# debug()
