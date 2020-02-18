@@ -131,11 +131,11 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         # print("data\r\n", self.data)
         # target = y[0]
         # print("layers\r\n", self.layers)
-        for dataPoint in self.data:
+        for dataPoint, target in zip(self.data, y):
             out = dataPoint
             for l in self.layers:
                 out = l.out(out)
-            back = self.layers[-1].backProp(self.lr, None, target=y)
+            back = self.layers[-1].backProp(self.lr, None, target=target)
             for layer in reversed(self.layers[:-1]):
                  back = layer.backProp(self.lr, back)
             # self.tracer.endTrace()
