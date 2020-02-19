@@ -29,6 +29,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             self._weights = self.__initialize_weights__(
                 num_send_nodes, num_recv_nodes, initial_weights, standard_weight)
             self._deltas = np.zeros(np.shape(self._weights))
+            self._old_deltas = np.copy(self._deltas)
             self._out_func = output_func
             self._delta_func = delta_func
             self.tracer = tracer
@@ -58,37 +59,34 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             ones_shape = (x_shape[0], 1)
             ones_array = np.ones(ones_shape)
             self.x_aug = np.concatenate((self.x_aug, ones_array), axis=1)
-            self.tracer.addTrace("in_data", self.x_aug).addTrace(
-                "weights", self._weights)
+            self.tracer.addTrace("in_data", self.x_aug).addTrace("weights", self._weights)
             self.net = np.dot(self.x_aug, self._weights)
             self.firing = self._out_func(self.net)
-            self.tracer.addTrace("layer", self.serial_num).addTrace(
-                "net", self.net).addTrace("firing", self.firing)
+            self.tracer.addTrace("layer", self.serial_num).addTrace("net", self.net).addTrace("firing", self.firing)
             return self.firing
 
         def backProp(self, learn_rate, forward_layer, target=None):
             self.tracer.nextLevel()
-            f_prime_forward = self._delta_func(self.net).reshape(-1, 1)
-            self.tracer.addTrace("layer", self.serial_num).addTrace(
-                "prime forward", f_prime_forward)
+            f_prime_forward = self._delta_func(self.net)
+            self.tracer.addTrace("layer", self.serial_num).addTrace("prime forward", f_prime_forward)
             if target is not None:
                 self._delta_part = (target - self.firing) * f_prime_forward
             else:
-                dot_product = np.dot(forward_layer._weights,
-                                     forward_layer._delta_part)[:-1]
+                dot_product = np.dot(forward_layer._delta_part, np.transpose(forward_layer._weights))
                 # TODO: check if this math is right
-                self._delta_part = dot_product * f_prime_forward
+                self._delta_part = np.multiply(f_prime_forward, dot_product[:,:-1])
             self.tracer.addTrace("error", self._delta_part)
-            self._deltas = learn_rate * np.dot(self._delta_part, self.x_aug)
-            self.tracer.addTrace("delta", self._deltas)
+            # self._old_deltas = np.copy(self._deltas)
+            self._deltas = learn_rate * np.dot(np.transpose(self.x_aug), self._delta_part)
             return self
 
         def flush(self, momentum=0):
-            self._weights = self._weights + \
-                np.transpose(self._deltas + momentum * self._deltas)
-            self._deltas = np.zeros(np.shape(self._weights))
-            self.tracer.addTrace("level", self.serial_num).addTrace(
-                "next_weights", self._weights)
+            momentum_delta = momentum * self._old_deltas
+            self._deltas = self._deltas + momentum_delta
+            self.tracer.addTrace("delta", self._deltas)
+            self._weights = self._weights + self._deltas
+            self._old_deltas = np.copy(self._deltas)
+            self.tracer.addTrace("level", self.serial_num).addTrace("next_weights", self._weights)
             return self
 
         def get_weights(self):
@@ -125,7 +123,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.layers = []
         self.deterministic = deterministic
         # for debugging
-        self.print_last_not_all_trace = True
+        self.print_last_not_all_trace = False
 
 
     def __sigmoid__(self, net):
@@ -178,6 +176,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
 
         while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] - score > tolerance):
             # for dataPoint, target in zip(self.data, y):
+            self.tracer.addTrace("epoch", epochCount)
             for index in self.train_indicies:
                 self._forward_pass(self.data[index])
                 self._backprop_and_flush(y[index], momentum)
@@ -186,7 +185,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
                                y[x] for x in self.verify_indicies])
             self.tracer.addTrace("score", score)
 
-            if score < bssf[0]:
+            if score <= bssf[0]:
                 bssf = [score, self.get_weights()]
 
             self._shuffle_data()
@@ -194,8 +193,8 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             self.tracer.endTrace()
             self.tracer.nextIteration()
 
-        print("bssf\n", bssf)
-        self.initialize_weights(-1, -1, initial_weights=bssf[1])
+        # print("bssf\n", bssf)
+        # self.initialize_weights(-1, -1, initial_weights=bssf[1])# TODO: uncomment me!
 
         return self
 
@@ -270,8 +269,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         # split for validaiton
         start_test_index = np.random.randint(
             0, len(poss_indecies) - testSize)
-        self.train_indicies = poss_indecies[:start_test_index] + \
-            poss_indecies[start_test_index + testSize:]
+        self.train_indicies = poss_indecies[:start_test_index] + poss_indecies[start_test_index + testSize:]
         self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]       
 
 
@@ -280,15 +278,15 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             It might be easier to concatenate X & y and shuffle a single 2D array, rather than
              shuffling X and y exactly the same way, independently.
         """
-        to_shuffle = self.train_indicies
-        leave_how_many = 0
-        self.train_indicies = []
-
         if self.shuffle:
+            to_shuffle = self.train_indicies
+            leave_how_many = 0
+            self.train_indicies = []
             while len(to_shuffle) > leave_how_many:
                 index = np.random.randint(0, len(to_shuffle))
                 result = to_shuffle.pop(index)
                 self.train_indicies.append(result)
+        
 
     # Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
@@ -298,4 +296,5 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         return result
 
     def __repr__(self):
-        return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + (self.tracer.iteration_to_string(-1) if self.print_last_not_all_trace else str(self.tracer)) + '\r\n'
+        # return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + (self.tracer.iteration_to_string(-1) if self.print_last_not_all_trace else str(self.tracer)) + '\r\n'
+        return str(self.tracer) + "\r\n"
