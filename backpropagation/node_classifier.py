@@ -9,10 +9,13 @@ class CalcedValue:
 
 class Node:
     serial = 0
-    def __init__(self, out_value):
+    def __init__(self, out_value=None):
         self.out_value = CalcedValue(0)
         self.serial_num = Node.serial
         Node.serial = Node.serial + 1
+
+    def set_value(self, value):
+        self.out_value.value = value
 
     def get_net_value(self):
         return self.out_value.value
@@ -33,7 +36,7 @@ class Node:
         return []
 
     def flush(self, learn_rate, momentum):
-        pass
+        self.out_value.locked = False
 
 class InnerNode(Node):
     def __init__(self, prev_nodes, prev_weights, out_func, back_func):
@@ -47,6 +50,14 @@ class InnerNode(Node):
         self.deltas = CalcedValue()
         self.received_blame = {}
 
+    def set_prev_nodes(self, prev_nodes):
+        self.prev_nodes = prev_nodes
+
+    def set_prev_weights(self, prev_weights):
+        self.prev_weights = prev_weights
+
+    def get_prev_weights(self):
+        return self.prev_weights
 
     def get_net_value(self):
         if not self.net.locked:
@@ -118,6 +129,14 @@ class OuterNode(InnerNode):
 
 class MLPClassifier(BaseEstimator,ClassifierMixin):
 
+    def __sigmoid__(self, net):
+        return (1 + np.e ** (-1 * net)) ** -1
+
+    def __sigmoid_prime__(self, net):
+        unprime_out = self.__sigmoid__(net)
+        return unprime_out * (1 - unprime_out)
+
+
     def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True):
         """ Initialize class with chosen hyperparameters.
         Args:
@@ -128,15 +147,29 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             mlp = MLPClassifier([3,3]),  <--- this will create a model with two hidden layers, both 3 nodes wide
         """
         self.hidden_layer_widths = hidden_layer_widths
+        self._make_hidden_layers()
         self.lr = lr
         self.momentum = momentum
         self.shuffle = shuffle
 
         self.layers = []
-        for width in 
 
+    def _make_hidden_layers(self):
+        self.h_layers = [None]
+        for w in self.hidden_layer_widths:
+            curr = [InnerNode(self.h_layers[-1], None, self.__sigmoid__, self.__sigmoid_prime__)] * w
+            curr.append(Node(1)) # bias node
+            self.h_layers.append(curr)
+        self.h_layers = self.h_layers[1:]
+    
+    def _make_input_layer(self, width):
+        self.in_layer = [Node()] * width
+        self.in_layer.append(Node(1)) # bias node
 
-    def fit(self, X, y, initial_weights=None):
+    def _make_output_layer(self, width):
+        self.out_layer = [OuterNode(self.h_layers[-1], None, self.__sigmoid__, self.__sigmoid_prime__)] * width
+
+    def fit(self, X, y, initial_weights=None, initial_standard=None):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
         Args:
             X (array-like): A 2D numpy array with the training data, excluding targets
@@ -145,7 +178,17 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         Returns:
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
         """
-        self.initial_weights = self.initialize_weights() if not initial_weights else initial_weights
+        self.data = np.atleast_2d(X)
+        self.targets = np.atleast_2d(y)
+        x_shape = np.shape(self.data)
+        self._make_input_layer(x_shape[1])
+        y_shape = np.shape(self.targets)
+        self._make_output_layer(y_shape[0])
+        for node in self.h_layers[0][:-1]: # last hook-up
+            node.set_prev_nodes(self.in_layer)
+
+        
+        self.initialize_weights(initial_weights, initial_standard)
 
         return self
 
@@ -159,10 +202,44 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         """
         pass
 
-    def initialize_weights(self):
+    def initialize_weights(self, initial_weights, initial_standard):
         """ Initialize weights for perceptron. Don't forget the bias!
         Returns:
         """
+        if initial_weights is not None:
+            # they know what they are doing
+            for index, weights in zip(self.h_layers, initial_weights):
+                for nodeIndex in range(len(self.h_layers[index])):
+                    # slice the column for the node
+                    self.h_layers[index][nodeIndex].set_prev_weights(weights[:,nodeIndex])
+            for nodeIndex in range(len(self.out_layer)):
+                # and the initial weights out to the output layer
+                self.out_layer[nodeIndex].set_prev_weights(initial_weights[-1][:,nodeIndex])
+        elif initial_standard is not None:
+            # weights = []
+            # first = np.full((np.shape(self.in_layer)[0], np.shape(self.h_layers[0])[0]), initial_standard)
+            # weights.append(first)
+            # for layerIndex in range(len(self.h_layers)):
+            #     weights.append(np.full((np.shape(self.h_layers))))
+
+
+            for node in self.h_layers[0]:
+                node.set_prev_weights([initial_standard] * np.shape(self.in_layer)[0])
+            for layerIndex in range(len(self.h_layers[0:])):
+                for node in self.h_layers[layerIndex + 1]:
+                    node.set_prev_weights([initial_standard] * np.shape(self.h_layers[layerIndex])[0])
+            for node in self.out_layer:
+                node.set_prev_weights([initial_standard] * np.shape(self.h_layers[-1])[0])
+        else:
+            for node in self.h_layers[0]:
+                node.set_prev_weights(np.random.normal(size=np.shape(self.in_layer))
+            for layerIndex in range(len(self.h_layers[0:])):
+                for node in self.h_layers[layerIndex + 1]: # to account for the slice
+                    node.set_prev_weights(np.random.normal(size=np.shape(self.h_layers[layerIndex])))
+            for node in self.out_layer:
+                node.set_prev_weights(np.random.normal(size=np.shape(self.h_layers[-1])))
+
+
 
         return [0]
 
