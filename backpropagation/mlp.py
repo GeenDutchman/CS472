@@ -101,6 +101,15 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
                 str(self._deltas) + '\r\n'
             return out
 
+        def csv_print(self):
+            out = ''
+            for in_node in self._weights:
+                for weight in in_node:
+                    out = out + str(weight) + ',\n'
+            return out
+
+                
+
     def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True, deterministic=None):
         """ Initialize class with chosen hyperparameters.
 
@@ -298,3 +307,9 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
     def __repr__(self):
         # return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + (self.tracer.iteration_to_string(-1) if self.print_last_not_all_trace else str(self.tracer)) + '\r\n'
         return str(self.tracer) + "\r\n"
+
+    def csv_print(self):
+        out = ''
+        for layer in self.layers:
+            out = out + layer.csv_print()
+        return out
