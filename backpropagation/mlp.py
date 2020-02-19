@@ -3,7 +3,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 
 from tracer import SimpleTracer, ComplexTracer
 
-### NOTE: The only methods you are required to have are:
+# NOTE: The only methods you are required to have are:
 #   * predict
 #   * fit
 #   * score
@@ -11,7 +11,9 @@ from tracer import SimpleTracer, ComplexTracer
 #   They must take at least the parameters below, exactly as specified. The output of
 #   get_weights must be in the same format as the example provided.
 
-class MLPClassifier(BaseEstimator,ClassifierMixin):
+
+class MLPClassifier(BaseEstimator, ClassifierMixin):
+
 
     class MLPWeightsLayer:
         serial = 0
@@ -24,7 +26,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         '''
 
         def __init__(self, tracer, num_send_nodes, num_recv_nodes, output_func, delta_func, initial_weights=None, standard_weight=None):
-            self._weights = self.__initialize_weights__(num_send_nodes, num_recv_nodes, initial_weights, standard_weight)
+            self._weights = self.__initialize_weights__(
+                num_send_nodes, num_recv_nodes, initial_weights, standard_weight)
             self._deltas = np.zeros(np.shape(self._weights))
             self._out_func = output_func
             self._delta_func = delta_func
@@ -36,12 +39,13 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             # print("in:" , num_send_nodes, " out:", num_recv_nodes)
             if initial_weights is not None:
                 initial_inputs = np.shape(initial_weights)[0]
-                if initial_inputs > num_send_nodes: 
+                if initial_inputs > num_send_nodes:
                     # assume they know what they are doing
                     return np.array(initial_weights)
                 else:
                     nodes_short = (num_send_nodes + 1) - initial_inputs
-                    randos = np.random.normal((nodes_short,) + np.shape(initial_weights)[1:])
+                    randos = np.random.normal(
+                        (nodes_short,) + np.shape(initial_weights)[1:])
                     return np.concatenate((initial_weights, randos))
             if standard_weight is not None:
                 return np.full((num_send_nodes + 1, num_recv_nodes), standard_weight)
@@ -51,33 +55,40 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
             self.tracer.nextLevel()
             self.x_aug = np.atleast_2d(x)
             x_shape = np.shape(self.x_aug)
-            ones_shape = (x_shape[0],1)
+            ones_shape = (x_shape[0], 1)
             ones_array = np.ones(ones_shape)
             self.x_aug = np.concatenate((self.x_aug, ones_array), axis=1)
-            self.tracer.addTrace("in_data", self.x_aug).addTrace("weights", self._weights)
+            self.tracer.addTrace("in_data", self.x_aug).addTrace(
+                "weights", self._weights)
             self.net = np.dot(self.x_aug, self._weights)
             self.firing = self._out_func(self.net)
-            self.tracer.addTrace("layer", self.serial_num).addTrace("net", self.net).addTrace("firing", self.firing)
+            self.tracer.addTrace("layer", self.serial_num).addTrace(
+                "net", self.net).addTrace("firing", self.firing)
             return self.firing
 
         def backProp(self, learn_rate, forward_layer, target=None):
             self.tracer.nextLevel()
             f_prime_forward = self._delta_func(self.net).reshape(-1, 1)
-            self.tracer.addTrace("layer", self.serial_num).addTrace("prime forward", f_prime_forward)
+            self.tracer.addTrace("layer", self.serial_num).addTrace(
+                "prime forward", f_prime_forward)
             if target is not None:
                 self._delta_part = (target - self.firing) * f_prime_forward
             else:
-                dot_product = np.dot(forward_layer._weights, forward_layer._delta_part)[:-1]
-                self._delta_part = dot_product * f_prime_forward # TODO: check if this math is right
+                dot_product = np.dot(forward_layer._weights,
+                                     forward_layer._delta_part)[:-1]
+                # TODO: check if this math is right
+                self._delta_part = dot_product * f_prime_forward
             self.tracer.addTrace("error", self._delta_part)
             self._deltas = learn_rate * np.dot(self._delta_part, self.x_aug)
             self.tracer.addTrace("delta", self._deltas)
             return self
 
         def flush(self, momentum=0):
-            self._weights = self._weights + np.transpose(self._deltas + momentum * self._deltas)
+            self._weights = self._weights + \
+                np.transpose(self._deltas + momentum * self._deltas)
             self._deltas = np.zeros(np.shape(self._weights))
-            self.tracer.addTrace("level", self.serial_num).addTrace("next_weights", self._weights)
+            self.tracer.addTrace("level", self.serial_num).addTrace(
+                "next_weights", self._weights)
             return self
 
         def get_weights(self):
@@ -88,7 +99,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
         def __repr__(self):
             out = 'weights\r\n'
-            out = out + str(self._weights) + '\r\ndeltas\r\n' + str(self._deltas) + '\r\n'
+            out = out + str(self._weights) + '\r\ndeltas\r\n' + \
+                str(self._deltas) + '\r\n'
             return out
 
     def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True, deterministic=None):
@@ -112,13 +124,16 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.tracer = ComplexTracer()
         self.layers = []
         self.deterministic = deterministic
+        # for debugging
+        self.print_last_not_all_trace = True
+
 
     def __sigmoid__(self, net):
         return (1 + np.e ** (-1 * net)) ** -1
 
     def __sigmoid_prime__(self, net):
         unprime_out = self.__sigmoid__(net)
-        return unprime_out * ( 1 - unprime_out)
+        return unprime_out * (1 - unprime_out)
 
     def _forward_pass(self, dataPoint):
         out = dataPoint
@@ -129,11 +144,10 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
     def _backprop_and_flush(self, target, momentum=0):
         back = self.layers[-1].backProp(self.lr, None, target=target)
         for layer in reversed(self.layers[:-1]):
-                back = layer.backProp(self.lr, back)
+            back = layer.backProp(self.lr, back)
         # self.tracer.endTrace()
         for layer in self.layers:
             layer.flush(momentum)
-
 
     def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
@@ -147,29 +161,29 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
                 self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        self.initialize_weights(np.shape(X)[1], np.shape(y)[1], initial_weights, standard_weight=standard_weight)
+        self.initialize_weights(np.shape(X)[1], np.shape(
+            y)[1], initial_weights, standard_weight=standard_weight)
 
         self.data = np.array(X)
 
         epochCount = 0
         bssf = [np.inf, self.get_weights()]
-        
+
         # pre-shuffle and split into train and verify sets
         self._shuffle_data(self.data, y, percent_verify)
         # see how good it is initially
-        score = self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
+        score = self.score([self.data[x] for x in self.verify_indicies], [
+                           y[x] for x in self.verify_indicies])
 
         while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] - score > tolerance):
             # for dataPoint, target in zip(self.data, y):
             for index in self.train_indicies:
                 self._forward_pass(self.data[index])
                 self._backprop_and_flush(y[index])
-                
 
-            score = self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
+            score = self.score([self.data[x] for x in self.verify_indicies], [
+                               y[x] for x in self.verify_indicies])
             self.tracer.addTrace("score", score)
-            print("score", score)
-            print("predict", self.predict([self.data[x] for x in self.verify_indicies]))
 
             if score < bssf[0]:
                 bssf = [score, self.get_weights()]
@@ -208,15 +222,19 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
 
         """
         if initial_weights is not None:
+            self.layers = []
             for weights in initial_weights:
-                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, -1, -1, self.__sigmoid__, self.__sigmoid_prime__, weights))
+                self.layers.append(MLPClassifier.MLPWeightsLayer(
+                    self.tracer, -1, -1, self.__sigmoid__, self.__sigmoid_prime__, weights))
         else:
             prev = inputs
             for i in self.hidden_layer_widths:
-                self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, i, self.__sigmoid__, self.__sigmoid_prime__, standard_weight=standard_weight))
+                self.layers.append(MLPClassifier.MLPWeightsLayer(
+                    self.tracer, prev, i, self.__sigmoid__, self.__sigmoid_prime__, standard_weight=standard_weight))
                 prev = i
 
-            self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, outputs, self.__sigmoid__, self.__sigmoid_prime__, standard_weight=standard_weight))
+            self.layers.append(MLPClassifier.MLPWeightsLayer(self.tracer, prev, outputs,
+                                                             self.__sigmoid__, self.__sigmoid_prime__, standard_weight=standard_weight))
 
         # return [0]
 
@@ -248,6 +266,8 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
         self.train_indicies = []
         self.verify_indicies = []
         testSize = int(percent_verify * len(poss_indecies))
+        if testSize <= 0:
+            testSize = 1
         if self.shuffle:
             while len(poss_indecies) > testSize:
                 index = np.random.randint(0, len(poss_indecies))
@@ -255,19 +275,20 @@ class MLPClassifier(BaseEstimator,ClassifierMixin):
                 self.train_indicies.append(result)
             self.verify_indicies.extend(poss_indecies)
         else:
-            self.train_indicies = poss_indecies
+            # self.train_indicies = poss_indecies
             # one-hot attempt
-            # start_test_index = np.random.randint(0, len(poss_indecies) - testSize)
-            # self.train_indicies = poss_indecies[:start_test_index] + poss_indecies[start_test_index + testSize]
-            # self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]
+            start_test_index = np.random.randint(
+                0, len(poss_indecies) - testSize)
+            self.train_indicies = poss_indecies[:start_test_index] + \
+                poss_indecies[start_test_index + testSize:]
+            self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]
 
-    ### Not required by sk-learn but required by us for grading. Returns the weights.
+    # Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
         result = []
         for layer in self.layers:
             result.append(layer.get_weights())
         return result
 
-
     def __repr__(self):
-        return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + self.tracer.iteration_to_string(-1) + '\r\n'
+        return str(self.layers) + '\r\n' + '-' * 20 + '\r\n' + (self.tracer.iteration_to_string(-1) if self.print_last_not_all_trace else str(self.tracer)) + '\r\n'
