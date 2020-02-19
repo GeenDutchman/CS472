@@ -36,9 +36,9 @@ def debug():
     mat = Arff("../data/perceptron/debug/linsep2nonorigin.arff", label_count=1)
     data = mat.data[:, 0:-1]
     labels = mat.data[:, -1].reshape(-1, 1)
-    MLPClass = MLPClassifier(
-        lr=0.1, shuffle=False, deterministic=10)
-    MLPClass.fit(data, labels)
+    print("data\n", data)
+    MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=False, deterministic=10)
+    MLPClass.fit(data, labels, momentum=0.5, percent_verify=0, standard_weight=0)
     Accuracy = MLPClass.score(data, labels)
     print("Accuray = [{:.2f}]".format(Accuracy))
     print("Final Weights =", MLPClass.get_weights())
@@ -46,4 +46,4 @@ def debug():
 
 
 basic()
-# debug()
+debug()

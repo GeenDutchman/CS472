@@ -149,7 +149,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         for layer in self.layers:
             layer.flush(momentum)
 
-    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5):
+    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5, momentum=0):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
             Args:
@@ -180,7 +180,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             # for dataPoint, target in zip(self.data, y):
             for index in self.train_indicies:
                 self._forward_pass(self.data[index])
-                self._backprop_and_flush(y[index])
+                self._backprop_and_flush(y[index], momentum)
 
             score = self.score([self.data[x] for x in self.verify_indicies], [
                                y[x] for x in self.verify_indicies])
@@ -242,13 +242,13 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
     def score(self, X, y):
         """ Return accuracy of model on a given dataset. Must implement own score function.
 
-        Args:
-            X (array-like): A 2D numpy array with data, excluding targets
-            y (array-like): A 2D numpy array with targets
+            Args:
+                X (array-like): A 2D numpy array with data, excluding targets
+                y (array-like): A 2D numpy array with targets
 
-        Returns:
-            score : float
-                Mean accuracy of self.predict(X) wrt. y.
+            Returns:
+                score : float
+                    Mean accuracy of self.predict(X) wrt. y.
         """
         totals = 0
         for dataPoint, target in zip(X, y):
@@ -256,7 +256,8 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             diff = target - out
             totals = totals + (diff ** 2)
         how_many = len(y)
-        return np.inf if how_many is 0 else np.sum(totals) / how_many
+        # assume that if there is no validation data, anything will improve it
+        return 0 if how_many is 0 else np.sum(totals) / how_many
 
     def _train_validate_split(self, X, y, percent_verify=0.1):
         poss_indecies = list(range(len(X)))
@@ -264,9 +265,9 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.train_indicies = []
         self.verify_indicies = []
         testSize = int(percent_verify * len(poss_indecies))
-        if testSize <= 0:
-            testSize = 1
-        # one-hot attempt
+        # if testSize <= 0:
+        #     testSize = 1
+        # split for validaiton
         start_test_index = np.random.randint(
             0, len(poss_indecies) - testSize)
         self.train_indicies = poss_indecies[:start_test_index] + \
@@ -274,7 +275,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]       
 
 
-    def _shuffle_data(self, shuffle_in_validation=False):
+    def _shuffle_data(self):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
             It might be easier to concatenate X & y and shuffle a single 2D array, rather than
              shuffling X and y exactly the same way, independently.
@@ -283,20 +284,11 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         leave_how_many = 0
         self.train_indicies = []
 
-        if shuffle_in_validation:
-            to_shuffle = to_shuffle + self.verify_indicies
-            leave_how_many = len(self.verify_indicies)
-            self.verify_indicies = []
-
         if self.shuffle:
             while len(to_shuffle) > leave_how_many:
                 index = np.random.randint(0, len(to_shuffle))
                 result = to_shuffle.pop(index)
                 self.train_indicies.append(result)
-
-        if shuffle_in_validation:
-            self.verify_indicies = to_shuffle
-
 
     # Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
