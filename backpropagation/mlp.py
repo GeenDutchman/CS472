@@ -170,7 +170,8 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         bssf = [np.inf, self.get_weights()]
 
         # pre-shuffle and split into train and verify sets
-        self._shuffle_data(self.data, y, percent_verify)
+        self._train_validate_split(self.data, y, percent_verify)
+        self._shuffle_data()
         # see how good it is initially
         score = self.score([self.data[x] for x in self.verify_indicies], [
                            y[x] for x in self.verify_indicies])
@@ -188,7 +189,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             if score < bssf[0]:
                 bssf = [score, self.get_weights()]
 
-            self._shuffle_data(self.data, y, 0)
+            self._shuffle_data()
             epochCount = epochCount + 1
             self.tracer.endTrace()
             self.tracer.nextIteration()
@@ -257,31 +258,45 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         how_many = len(y)
         return np.inf if how_many is 0 else np.sum(totals) / how_many
 
-    def _shuffle_data(self, X, y, percent_verify=0.1):
-        """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
-            It might be easier to concatenate X & y and shuffle a single 2D array, rather than
-             shuffling X and y exactly the same way, independently.
-        """
+    def _train_validate_split(self, X, y, percent_verify=0.1):
         poss_indecies = list(range(len(X)))
+
         self.train_indicies = []
         self.verify_indicies = []
         testSize = int(percent_verify * len(poss_indecies))
         if testSize <= 0:
             testSize = 1
+        # one-hot attempt
+        start_test_index = np.random.randint(
+            0, len(poss_indecies) - testSize)
+        self.train_indicies = poss_indecies[:start_test_index] + \
+            poss_indecies[start_test_index + testSize:]
+        self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]       
+
+
+    def _shuffle_data(self, shuffle_in_validation=False):
+        """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
+            It might be easier to concatenate X & y and shuffle a single 2D array, rather than
+             shuffling X and y exactly the same way, independently.
+        """
+        to_shuffle = self.train_indicies
+        leave_how_many = 0
+        self.train_indicies = []
+
+        if shuffle_in_validation:
+            to_shuffle = to_shuffle + self.verify_indicies
+            leave_how_many = len(self.verify_indicies)
+            self.verify_indicies = []
+
         if self.shuffle:
-            while len(poss_indecies) > testSize:
-                index = np.random.randint(0, len(poss_indecies))
-                result = poss_indecies.pop(index)
+            while len(to_shuffle) > leave_how_many:
+                index = np.random.randint(0, len(to_shuffle))
+                result = to_shuffle.pop(index)
                 self.train_indicies.append(result)
-            self.verify_indicies.extend(poss_indecies)
-        else:
-            # self.train_indicies = poss_indecies
-            # one-hot attempt
-            start_test_index = np.random.randint(
-                0, len(poss_indecies) - testSize)
-            self.train_indicies = poss_indecies[:start_test_index] + \
-                poss_indecies[start_test_index + testSize:]
-            self.verify_indicies = poss_indecies[start_test_index:start_test_index + testSize]
+
+        if shuffle_in_validation:
+            self.verify_indicies = to_shuffle
+
 
     # Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
