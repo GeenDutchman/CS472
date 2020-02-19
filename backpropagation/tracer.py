@@ -49,7 +49,7 @@ class SimpleTracer:
         if self._longest_key is None:
             return 'Trace is empty from here\r\n'
         out = ''
-        tabs = '\t|'
+        tabs = '|'
         newline = '\n\r'
         for key in self.container:
             out = out + str(key) + tabs
@@ -59,7 +59,7 @@ class SimpleTracer:
                 if i >= len(self.container[key]):
                     out = out + self._val_unavailable + tabs
                 else:
-                    out = out + str(self.container[key][i]).replace('\n', '\\') + tabs
+                    out = out + str(self.container[key][i]).replace('\n', '') + tabs
             out = out + newline
         out = out + newline
         return out
@@ -104,3 +104,5 @@ class ComplexTracer(SimpleTracer):
             self.loadIteration(index)
             out = out + str(super().__repr__())
         return out
+
+        
