@@ -31,19 +31,35 @@ def basic():
         raise e
 
 def debug():
-    print("------------arff-------------------")
+    # print("------------arff-------------------")
 
     mat = Arff("../data/perceptron/debug/linsep2nonorigin.arff", label_count=1)
     data = mat.data[:, 0:-1]
     labels = mat.data[:, -1].reshape(-1, 1)
-    print("data\n", data)
+    # print("data\n", data)
     MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=False, deterministic=10)
     MLPClass.fit(data, labels, momentum=0.5, percent_verify=0, standard_weight=0)
     Accuracy = MLPClass.score(data, labels)
-    print("Accuray = [{:.2f}]".format(Accuracy))
+    # print(MLPClass)
     print("Final Weights =", MLPClass.get_weights())
     # print(MLPClass)
 
+def eval():
+    # print("------------eval-------------------")
 
-basic()
-debug()
+    mat = Arff("../data/perceptron/evaluation/data_banknote_authentication.arff", label_count=1)
+    data = mat.data[:, 0:-1]
+    labels = mat.data[:, -1].reshape(-1, 1)
+    # print("data\n", data)
+    MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=False, deterministic=10)
+    MLPClass.fit(data, labels, momentum=0.5, percent_verify=0, standard_weight=0)
+    Accuracy = MLPClass.score(data, labels)
+    # print(MLPClass)
+    # print("Final Weights =", MLPClass.get_weights())
+    # print(MLPClass)
+    print(MLPClass.csv_print())
+
+
+# basic()
+# debug()
+eval()
