@@ -300,7 +300,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         for out, target in zip(outs, y):
             if np.array_equal(out, target):
                 correct = correct + 1
-        return correct / len(y)
+        return 0 if len(y) == 0 else correct / len(y)
 
     def _train_validate_split(self, X, y, percent_verify=0.1):
         poss_indecies = list(range(len(X)))
