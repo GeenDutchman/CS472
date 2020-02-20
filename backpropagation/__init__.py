@@ -126,8 +126,33 @@ def iris():
     accuracy = MLPClass.score(tData, tLabels)
     print("Test Accuracy = [{:.2f}]".format(accuracy))
 
+def vowel():
+    # print("-------------vowel----------------")
+    mat = Arff("../data/vowel.arff", label_count=1)
+    y = mat.data[:,-1]
+    lb = preprocessing.LabelBinarizer()
+    lb.fit(y)
+    y = lb.transform(y)
+
+    # split it
+    data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], y, test_size=.25)
+
+    findings = []
+    findings.append(["LR", "TestAccuracy", "L2 Error", "Epochs"])
+    for lr in range(-1, 5):
+        for step in [1, 5, 8]:
+            learn_rate = (0.1**lr)*step
+            MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=learn_rate, shuffle=True, one_hot=True)
+            MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
+
+            accuracy = MLPClass.score(tData, tLabels)
+            findings.append([learn_rate, accuracy, MLPClass._calc_l2_err(data, labels), MLPClass.getEpochCount()])
+    print(findings)
+    np.savetxt("vowel_findings.csv", findings, delimiter=",")
+
 
 # basic()
 # debug()
 # eval()
-iris()
+# iris()
+vowel()

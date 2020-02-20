@@ -173,7 +173,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
 
         self.data = np.array(X)
 
-        epochCount = 0
+        self.epochCount = 0
         bssf = [np.inf, self.get_weights()]
 
         # pre-shuffle and split into train and verify sets
@@ -184,9 +184,9 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
 
         window_countdown = window
 
-        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and window_countdown > 0):
+        while (self.deterministic is not None and self.epochCount < self.deterministic) or (self.deterministic is None and window_countdown > 0):
             # for dataPoint, target in zip(self.data, y):
-            self.tracer.addTrace("epoch", epochCount)
+            self.tracer.addTrace("epoch", self.epochCount)
             for index in self.train_indicies:
                 self._forward_pass(self.data[index])
                 self._backprop_and_flush(y[index], momentum)
@@ -204,7 +204,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
                 window_countdown = window_countdown - 1
 
             self._shuffle_data()
-            epochCount = epochCount + 1
+            self.epochCount = self.epochCount + 1
             self.tracer.endTrace()
             self.tracer.nextIteration()
 
@@ -212,6 +212,9 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.initialize_weights(-1, -1, initial_weights=bssf[1])# TODO: uncomment me!
 
         return self
+
+    def getEpochCount(self):
+        return self.epochCount
 
     def predict(self, X):
         """ Predict all classes for a dataset X
