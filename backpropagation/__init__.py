@@ -175,7 +175,7 @@ def vowel():
 
             findings.append(entry)
 
-            if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
+            if accuracy < bssf[0] and abs(accuracy - bssf[0]) > tolerance:
                 bssf = [accuracy, learn_rate]
                 window = master_window
             else:
@@ -212,7 +212,7 @@ def vowel():
 
         findings.append(entry)
 
-        if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
+        if accuracy < bssf[0] and abs(accuracy - bssf[0]) > tolerance:
             bssf = [accuracy, num_nodes]
             window = master_window
         else:
@@ -243,7 +243,7 @@ def vowel():
 
         findings.append(entry)
 
-        if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
+        if accuracy < bssf[0] and abs(accuracy - bssf[0]) > tolerance:
             bssf = [accuracy, momentum]
             window = master_window
         else:
@@ -253,8 +253,8 @@ def vowel():
 
 
 
-basic()
-debug()
-evaluate()
-iris()
+# basic()
+# debug()
+# evaluate()
+# iris()
 vowel()
