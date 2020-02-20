@@ -35,7 +35,7 @@ def basic():
         raise e
 
 def debug():
-    # print("------------arff-------------------")
+    print("------------arff-------------------")
 
     mat = Arff("../data/perceptron/debug/linsep2nonorigin.arff", label_count=1)
     data = mat.data[:, 0:-1]
@@ -45,11 +45,23 @@ def debug():
     MLPClass.fit(data, labels, momentum=0.5, percent_verify=0, standard_weight=0)
     Accuracy = MLPClass.score(data, labels)
     # print(MLPClass)
-    print("Final Weights =", MLPClass.get_weights())
-    # print(MLPClass)
+    retrieved_weights = MLPClass.get_weights()
 
-def eval():
-    # print("------------eval-------------------")
+    header = []
+    weights = []
+    for layer in range(len(retrieved_weights)):
+        header.append("Layer " + str(layer))
+        weights.append(retrieved_weights[layer])
+
+    results = []
+    results.append(header)
+    results.append(weights)
+
+    np.savetxt("linsep_weights_eval_2.csv", sep=",")
+
+
+def evaluate():
+    print("------------eval-------------------")
 
     mat = Arff("../data/perceptron/evaluation/data_banknote_authentication.arff", label_count=1)
     data = mat.data[:, 0:-1]
@@ -102,11 +114,11 @@ def _shuffle_split(data, targets, percent_test):
     assert(non_duplicate != 0)
     assert(non_duplicate1 != 0)
 
-    print("training", len(training), "t_train", len(training_target), "testing", len(testing), "t_target", len(testing_target))
+    # print("training", len(training), "t_train", len(training_target), "testing", len(testing), "t_target", len(testing_target))
     return training, training_target, testing, testing_target
 
 def iris():
-    # print("-------------iris----------------")
+    print("-------------iris----------------")
     mat = Arff("../data/perceptron/iris.arff", label_count=3)
 
     y = mat.data[:,-1]
@@ -123,11 +135,13 @@ def iris():
     MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=True, one_hot=True)
     MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
 
+    np.savetxt("Iris_eval.csv", MLPClass.stupidData, delimiter=',')
+
     accuracy = MLPClass.score(tData, tLabels)
     print("Test Accuracy = [{:.2f}]".format(accuracy))
 
 def vowel():
-    # print("-------------vowel----------------")
+    print("-------------vowel----------------")
     mat = Arff("../data/vowel.arff", label_count=1)
     y = mat.data[:,-1]
     lb = preprocessing.LabelBinarizer()
@@ -179,12 +193,14 @@ def vowel():
     window = master_window
     findings = []
     bssf = [np.inf, 0]
-    findings.append(["Num Nodes", "Epochs", "Test Accuracy"])
+    findings.append(["Num Nodes", "Epochs", "Train Accuracy", 'VS accuracy', 'test accuracy'])
     accuracy = bssf[0]
     doubler = 0
     num_nodes = 0
     while(window > 0):
         num_nodes = num_nodes * doubler
+        print("numnodes", num_nodes)
+
         MLPClass = MLPClassifier([num_nodes], lr=lr, shuffle=True, one_hot=True)
         MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
 
@@ -200,16 +216,45 @@ def vowel():
         findings.append(entry)
 
         if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
-            bssf = [accuracy, learn_rate]
+            bssf = [accuracy, num_nodes]
             window = master_window
         else:
             window = window - 1
 
     np.savetxt("vowel_findings_hid_nodes.csv", findings, delimiter=",")
 
+    num_nodes = bssf[1]
+    window = master_window
+    findings = []
+    findings.append(["Momentum", "Epochs", "Train Accuracy", 'VS accuracy', 'test accuracy'])
+    momentum = 0
+    while(window > 0):
+        momentum = momentum + 0.05
+        print("momentum", momentum)
 
-# basic()
-# debug()
-# eval()
-# iris()
+        MLPClass = MLPClassifier([num_nodes], lr=lr, shuffle=True, one_hot=True)
+        MLPClass.fit(data, labels, momentum=momentum, percent_verify=.25)
+
+        accuracy = MLPClass.score(tData, tLabels)
+        entry = []
+
+        entry.append(momentum)
+        entry.append(MLPClass.getEpochCount())
+        entry.append(MLPClass._calc_l2_err(data, labels))
+        entry.append(MLPClass.bssf[0])
+        entry.append(MLPClass._calc_l2_err(tData, tLabels))
+
+        findings.append(entry)
+
+        if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
+            bssf = [accuracy, momentum]
+            window = master_window
+        else:
+            window = window - 1   
+
+
+basic()
+debug()
+evaluate()
+iris()
 vowel()

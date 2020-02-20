@@ -182,6 +182,9 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         # see how good it is initially
         score = self._calc_l2_err([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
 
+        self.stupidData = []
+        self.stupidData.append(["epoch", 'Train MSE', 'VS MSE', 'VS Accuracy', 'Least Error'])
+
         window_countdown = window
 
         while (self.deterministic is not None and self.epochCount < self.deterministic) or (self.deterministic is None and window_countdown > 0):
@@ -191,8 +194,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
                 self._forward_pass(self.data[index])
                 self._backprop_and_flush(y[index], momentum)
 
-            score = self._calc_l2_err([self.data[x] for x in self.verify_indicies], [
-                               y[x] for x in self.verify_indicies])
+            score = self._calc_l2_err([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
             self.tracer.addTrace("score", score)
 
             # if infinite or big enough change, commit it
@@ -203,6 +205,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             else:
                 window_countdown = window_countdown - 1
 
+            self.stupidData.append([self.epochCount, self._calc_l2_err([self.data[x] for x in self.train_indicies], [y[x] for x in self.train_indicies]), score, self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies]), self.bssf[0]])
             self._shuffle_data()
             self.epochCount = self.epochCount + 1
             self.tracer.endTrace()
