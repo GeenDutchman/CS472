@@ -48,7 +48,7 @@ def debug():
     retrieved_weights = MLPClass.get_weights()
 
     for layer in range(len(retrieved_weights)):
-        np.savetxt("linsep_weights_eval_" + str(layer) + ".csv", retrieved_weights[layer])
+        np.savetxt("linsep_weights_eval_" + str(layer) + ".csv", retrieved_weights[layer], delimiter=',')
 
 
 def evaluate():
@@ -126,7 +126,7 @@ def iris():
     MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=True, one_hot=True)
     MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
 
-    np.savetxt("Iris_eval.csv", MLPClass.stupidData[1:], header=reduce(MLPClass.stupidData[0]))
+    np.savetxt("Iris_eval.csv", MLPClass.stupidData[1:], header=reduce(MLPClass.stupidData[0]), delimiter=',')
 
     accuracy = MLPClass.score(tData, tLabels)
     print("Test Accuracy = [{:.2f}]".format(accuracy))
@@ -184,7 +184,7 @@ def vowel():
                     break
 
     print("\n\r", findings)
-    np.savetxt("vowel_findings_lr.csv", findings[1:], header=reduce(findings[0]))
+    np.savetxt("vowel_findings_lr.csv", findings[1:], header=reduce(findings[0]), delimiter=',')
 
     lr = bssf[1]
     window = master_window
@@ -218,7 +218,7 @@ def vowel():
         else:
             window = window - 1
 
-    np.savetxt("vowel_findings_hid_nodes.csv", findings[1:], header=reduce(findings[0]))
+    np.savetxt("vowel_findings_hid_nodes.csv", findings[1:], header=reduce(findings[0]), delimiter=',')
 
     num_nodes = bssf[1]
     window = master_window
@@ -249,7 +249,7 @@ def vowel():
         else:
             window = window - 1   
 
-    np.savetxt("vowel_findings_momentum.csv", findings[1:], header=reduce(findings[0]))
+    np.savetxt("vowel_findings_momentum.csv", findings[1:], header=reduce(findings[0]), delimiter=',')
 
 
 
