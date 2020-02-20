@@ -47,17 +47,8 @@ def debug():
     # print(MLPClass)
     retrieved_weights = MLPClass.get_weights()
 
-    header = []
-    weights = []
     for layer in range(len(retrieved_weights)):
-        header.append("Layer " + str(layer))
-        weights.append(retrieved_weights[layer])
-
-    results = []
-    results.append(header)
-    results.append(weights)
-
-    np.savetxt("linsep_weights_eval_2.csv", results)
+        np.savetxt("linsep_weights_eval_" + str(layer) + ".csv", retrieved_weights[layer])
 
 
 def evaluate():
