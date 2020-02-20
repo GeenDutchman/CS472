@@ -137,10 +137,16 @@ def vowel():
     # split it
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], y, test_size=.25)
 
+    master_window = 3
+    window = master_window
+    bssf = [np.inf, 0]
+    tolerance = 1e-2
     findings = []
-    findings.append(["LR", "Epochs", "TestAccuracy", "MSE train", "MSE validate", "MSE test"])
+    findings.append(["LR", "Epochs", "TestAccuracy", "MSE train", "MSE validate", "MSE test", "Best LR"])
     for lr in range(-1, 5):
-        for step in [1, 5, 8]:
+        if window <= 0:
+            break
+        for step in [1, 5]:
             entry = []
             print((lr, step), end=",")
             learn_rate = (0.1**lr)*step
@@ -154,10 +160,52 @@ def vowel():
             entry.append(MLPClass._calc_l2_err(data, labels))
             entry.append(MLPClass.bssf[0])
             entry.append(MLPClass._calc_l2_err(tData, tLabels))
+            entry.append(bssf[1])
 
             findings.append(entry)
+
+            if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
+                bssf = [accuracy, learn_rate]
+                window = master_window
+            else:
+                window = window - 1
+                if window <= 0:
+                    break
+
     print("\n\r", findings)
-    np.savetxt("vowel_findings.csv", findings, delimiter=",")
+    np.savetxt("vowel_findings_lr.csv", findings, delimiter=",")
+
+    lr = bssf[1]
+    window = master_window
+    findings = []
+    bssf = [np.inf, 0]
+    findings.append(["Num Nodes", "Epochs", "Test Accuracy"])
+    accuracy = bssf[0]
+    doubler = 0
+    num_nodes = 0
+    while(window > 0):
+        num_nodes = num_nodes * doubler
+        MLPClass = MLPClassifier([num_nodes], lr=lr, shuffle=True, one_hot=True)
+        MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
+
+        accuracy = MLPClass.score(tData, tLabels)
+        entry = []
+
+        entry.append(num_nodes)
+        entry.append(MLPClass.getEpochCount())
+        entry.append(MLPClass._calc_l2_err(data, labels))
+        entry.append(MLPClass.bssf[0])
+        entry.append(MLPClass._calc_l2_err(tData, tLabels))
+
+        findings.append(entry)
+
+        if accuracy > bssf[0] and abs(accuracy - bssf[0]) > tolerance:
+            bssf = [accuracy, learn_rate]
+            window = master_window
+        else:
+            window = window - 1
+
+    np.savetxt("vowel_findings_hid_nodes.csv", findings, delimiter=",")
 
 
 # basic()
