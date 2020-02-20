@@ -174,7 +174,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.data = np.array(X)
 
         self.epochCount = 0
-        bssf = [np.inf, self.get_weights()]
+        self.bssf = [np.inf, self.get_weights()]
 
         # pre-shuffle and split into train and verify sets
         self._train_validate_split(self.data, y, percent_verify)
@@ -196,9 +196,9 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             self.tracer.addTrace("score", score)
 
             # if infinite or big enough change, commit it
-            score_diff = bssf[0] - score
-            if bssf[0] is np.inf or (score_diff > 0 and abs(score_diff) > tolerance):
-                bssf = [score, self.get_weights()]
+            score_diff = self.bssf[0] - score
+            if self.bssf[0] is np.inf or (score_diff > 0 and abs(score_diff) > tolerance):
+                self.bssf = [score, self.get_weights()]
                 window_countdown = window
             else:
                 window_countdown = window_countdown - 1
@@ -209,7 +209,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             self.tracer.nextIteration()
 
         # print("bssf\n", bssf)
-        self.initialize_weights(-1, -1, initial_weights=bssf[1])# TODO: uncomment me!
+        self.initialize_weights(-1, -1, initial_weights=self.bssf[1])# TODO: uncomment me!
 
         return self
 

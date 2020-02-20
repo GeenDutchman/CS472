@@ -138,16 +138,25 @@ def vowel():
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], y, test_size=.25)
 
     findings = []
-    findings.append(["LR", "TestAccuracy", "L2 Error", "Epochs"])
+    findings.append(["LR", "Epochs", "TestAccuracy", "MSE train", "MSE validate", "MSE test"])
     for lr in range(-1, 5):
         for step in [1, 5, 8]:
+            entry = []
+            print((lr, step), end=",")
             learn_rate = (0.1**lr)*step
             MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=learn_rate, shuffle=True, one_hot=True)
             MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
 
             accuracy = MLPClass.score(tData, tLabels)
-            findings.append([learn_rate, accuracy, MLPClass._calc_l2_err(data, labels), MLPClass.getEpochCount()])
-    print(findings)
+            entry.append(learn_rate)
+            entry.append(MLPClass.getEpochCount())
+            entry.append(accuracy)
+            entry.append(MLPClass._calc_l2_err(data, labels))
+            entry.append(MLPClass.bssf[0])
+            entry.append(MLPClass._calc_l2_err(tData, tLabels))
+
+            findings.append(entry)
+    print("\n\r", findings)
     np.savetxt("vowel_findings.csv", findings, delimiter=",")
 
 
