@@ -254,8 +254,8 @@ def vowel():
 
 
 
-# basic()
-# debug()
-# evaluate()
-# iris()
+basic()
+debug()
+evaluate()
+iris()
 vowel()
