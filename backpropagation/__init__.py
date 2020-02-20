@@ -57,7 +57,7 @@ def debug():
     results.append(header)
     results.append(weights)
 
-    np.savetxt("linsep_weights_eval_2.csv", sep=",")
+    np.savetxt("linsep_weights_eval_2.csv", results)
 
 
 def evaluate():
@@ -135,7 +135,7 @@ def iris():
     MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=True, one_hot=True)
     MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
 
-    np.savetxt("Iris_eval.csv", MLPClass.stupidData, delimiter=',')
+    np.savetxt("Iris_eval.csv", MLPClass.stupidData)
 
     accuracy = MLPClass.score(tData, tLabels)
     print("Test Accuracy = [{:.2f}]".format(accuracy))
@@ -187,7 +187,7 @@ def vowel():
                     break
 
     print("\n\r", findings)
-    np.savetxt("vowel_findings_lr.csv", findings, delimiter=",")
+    np.savetxt("vowel_findings_lr.csv", findings)
 
     lr = bssf[1]
     window = master_window
@@ -221,7 +221,7 @@ def vowel():
         else:
             window = window - 1
 
-    np.savetxt("vowel_findings_hid_nodes.csv", findings, delimiter=",")
+    np.savetxt("vowel_findings_hid_nodes.csv", findings)
 
     num_nodes = bssf[1]
     window = master_window
