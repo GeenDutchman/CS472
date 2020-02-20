@@ -148,10 +148,10 @@ def vowel():
     # split it
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], y, test_size=.25)
 
-    master_window = 3
+    master_window = 5
     window = master_window
     bssf = [np.inf, 0]
-    tolerance = 1e-2
+    tolerance = 1e-4
     findings = []
     findings.append(["LR", "Epochs", "TestAccuracy", "MSE train", "MSE validate", "MSE test", "Best LR"])
     for lr in range(-1, 5):
@@ -189,11 +189,11 @@ def vowel():
     lr = bssf[1]
     window = master_window
     findings = []
-    bssf = [np.inf, 0]
     findings.append(["Num Nodes", "Epochs", "Train Accuracy", 'VS accuracy', 'test accuracy'])
     accuracy = bssf[0]
     doubler = 0
     num_nodes = 0
+    bssf = [np.inf, 0]
     while(window > 0):
         num_nodes = num_nodes * doubler
         print("numnodes", num_nodes)
@@ -225,6 +225,7 @@ def vowel():
     findings = []
     findings.append(["Momentum", "Epochs", "Train Accuracy", 'VS accuracy', 'test accuracy'])
     momentum = 0
+    bssf = [np.inf, momentum]
     while(window > 0):
         momentum = momentum + 0.05
         print("momentum", momentum)
