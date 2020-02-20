@@ -128,7 +128,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.train_indicies = []
         self.verify_indicies = []
         # self.tracer = SimpleTracer() # initialize simple Tracer
-        self.tracer = ComplexTracer()
+        self.tracer = ComplexTracer().setActive(False)
         self.layers = []
         self.deterministic = deterministic
         # for debugging
@@ -156,7 +156,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         for layer in self.layers:
             layer.flush(momentum)
 
-    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5, momentum=0):
+    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5, momentum=0, oneHot=False):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
             Args:
@@ -168,8 +168,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
                 self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        self.initialize_weights(np.shape(X)[1], np.shape(
-            y)[1], initial_weights, standard_weight=standard_weight)
+        self.initialize_weights(np.shape(X)[1], np.shape(y)[1], initial_weights, standard_weight=standard_weight)
 
         self.data = np.array(X)
 
@@ -180,8 +179,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self._train_validate_split(self.data, y, percent_verify)
         self._shuffle_data()
         # see how good it is initially
-        score = self.score([self.data[x] for x in self.verify_indicies], [
-                           y[x] for x in self.verify_indicies])
+        score = self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
 
         while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] - score > tolerance):
             # for dataPoint, target in zip(self.data, y):
@@ -203,7 +201,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             self.tracer.nextIteration()
 
         # print("bssf\n", bssf)
-        # self.initialize_weights(-1, -1, initial_weights=bssf[1])# TODO: uncomment me!
+        self.initialize_weights(-1, -1, initial_weights=bssf[1])# TODO: uncomment me!
 
         return self
 
@@ -262,7 +260,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         for dataPoint, target in zip(X, y):
             out = self._forward_pass(dataPoint)
             diff = target - out
-            totals = totals + (diff ** 2)
+            totals = totals + np.sum(diff ** 2)
         how_many = len(y)
         # assume that if there is no validation data, anything will improve it
         return 0 if how_many is 0 else np.sum(totals) / how_many
