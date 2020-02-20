@@ -110,7 +110,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
 
                 
 
-    def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True, deterministic=None):
+    def __init__(self, hidden_layer_widths, lr=.1, momentum=0, shuffle=True, deterministic=None, one_hot=False):
         """ Initialize class with chosen hyperparameters.
 
         Args:
@@ -133,6 +133,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self.deterministic = deterministic
         # for debugging
         self.print_last_not_all_trace = False
+        self.one_hot = one_hot
 
 
     def __sigmoid__(self, net):
@@ -156,7 +157,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         for layer in self.layers:
             layer.flush(momentum)
 
-    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, tolerance=1e-5, momentum=0, oneHot=False):
+    def fit(self, X, y, initial_weights=None, standard_weight=None, percent_verify=0.1, window=4, momentum=0, tolerance=1e-3):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
             Args:
@@ -179,21 +180,28 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
         self._train_validate_split(self.data, y, percent_verify)
         self._shuffle_data()
         # see how good it is initially
-        score = self.score([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
+        score = self._calc_l2_err([self.data[x] for x in self.verify_indicies], [y[x] for x in self.verify_indicies])
 
-        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and bssf[0] - score > tolerance):
+        window_countdown = window
+
+        while (self.deterministic is not None and epochCount < self.deterministic) or (self.deterministic is None and window_countdown > 0):
             # for dataPoint, target in zip(self.data, y):
             self.tracer.addTrace("epoch", epochCount)
             for index in self.train_indicies:
                 self._forward_pass(self.data[index])
                 self._backprop_and_flush(y[index], momentum)
 
-            score = self.score([self.data[x] for x in self.verify_indicies], [
+            score = self._calc_l2_err([self.data[x] for x in self.verify_indicies], [
                                y[x] for x in self.verify_indicies])
             self.tracer.addTrace("score", score)
 
-            if score <= bssf[0]:
+            # if infinite or big enough change, commit it
+            score_diff = bssf[0] - score
+            if bssf[0] is np.inf or (score_diff > 0 and abs(score_diff) > tolerance):
                 bssf = [score, self.get_weights()]
+                window_countdown = window
+            else:
+                window_countdown = window_countdown - 1
 
             self._shuffle_data()
             epochCount = epochCount + 1
@@ -220,6 +228,7 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
             outs.append(self._forward_pass(dataPoint))
         if len(outs) > 0:
             outs = np.reshape(outs, (len(outs), -1))
+        outs = np.array(outs)
         return outs, np.shape(outs)
 
     def initialize_weights(self, inputs, outputs, initial_weights=None, standard_weight=None):
@@ -245,6 +254,28 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
 
         # return [0]
 
+    def _calc_l2_err(self, X, y):
+        outs = self.predict(X)[0]
+        totals = 0
+        for out, target in zip(outs, y):
+            diff = target - out
+            totals = totals + np.sum(diff ** 2)
+        how_many = len(y)
+        # assume that if there is no validation data, anything will improve it
+        return np.inf if how_many is 0 else np.sum(totals) / how_many
+
+    def _do_one_hot(self, y, depress=False):
+        if not self.one_hot:
+            return y
+        result = y
+        max_val_index = np.argmax(y)
+        for index in range(len(result)):
+            if index == max_val_index:
+                result[index] = 1
+            elif depress:
+                result[index] = 0
+        return result
+
     def score(self, X, y):
         """ Return accuracy of model on a given dataset. Must implement own score function.
 
@@ -256,14 +287,14 @@ class MLPClassifier(BaseEstimator, ClassifierMixin):
                 score : float
                     Mean accuracy of self.predict(X) wrt. y.
         """
-        totals = 0
-        for dataPoint, target in zip(X, y):
-            out = self._forward_pass(dataPoint)
-            diff = target - out
-            totals = totals + np.sum(diff ** 2)
-        how_many = len(y)
-        # assume that if there is no validation data, anything will improve it
-        return 0 if how_many is 0 else np.sum(totals) / how_many
+        outs = self.predict(X)[0]
+        correct = 0
+        if self.one_hot:
+            outs = [self._do_one_hot(out, depress=True) for out in outs]
+        for out, target in zip(outs, y):
+            if np.array_equal(out, target):
+                correct = correct + 1
+        return correct / len(y)
 
     def _train_validate_split(self, X, y, percent_verify=0.1):
         poss_indecies = list(range(len(X)))

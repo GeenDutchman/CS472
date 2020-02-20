@@ -5,6 +5,7 @@ from mlp import MLPClassifier
 from arff import Arff
 
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
 
 
 
@@ -65,8 +66,6 @@ def eval():
 def _shuffle_split(data, targets, percent_test):
     poss_indecies = list(range(len(data)))
     indicies = []
-    print(len(poss_indecies))
-    print(int(percent_test * len(poss_indecies)))
     testSize = int(percent_test * len(poss_indecies))
     while len(poss_indecies) > testSize:
         index = np.random.randint(0, len(poss_indecies))
@@ -80,36 +79,52 @@ def _shuffle_split(data, targets, percent_test):
     for i in indicies:
         training.append(data[i])
         training_target.append(targets[i])
+    training = np.array(training)
+    training_target = np.array(training_target)
     
     testing = []
     testing_target = []
     for i in poss_indecies:
         testing.append(data[i])
         testing_target.append(targets[i])
+    testing = np.array(testing)
+    testing_target = np.array(testing_target)
 
+    non_duplicate = 0
+    for point in reversed(testing):
+        if point not in training:
+            non_duplicate = non_duplicate + 1
+    non_duplicate1 = 0
+    for point in reversed(training):
+        if point not in testing:
+            non_duplicate1 = non_duplicate1 + 1
 
-    return np.array(training), np.array(training_target), np.array(testing), np.array(testing_target)
+    assert(non_duplicate != 0)
+    assert(non_duplicate1 != 0)
+
+    print("training", len(training), "t_train", len(training_target), "testing", len(testing), "t_target", len(testing_target))
+    return training, training_target, testing, testing_target
 
 def iris():
     # print("-------------iris----------------")
     mat = Arff("../data/perceptron/iris.arff", label_count=3)
 
     y = mat.data[:,-1]
-    print(y)
+    # print(y)
 
     lb = preprocessing.LabelBinarizer()
     lb.fit(y)
     y = lb.transform(y)
 
     # split it
-    data, labels, tData, tLabels = _shuffle_split(mat.data, y, .25)
+    # data, labels, tData, tLabels = _shuffle_split(mat.data[:, :-1], y, .25)
+    data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], y, test_size=.25)
 
-
-    MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=True)
+    MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=True, one_hot=True)
     MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
 
     accuracy = MLPClass.score(tData, tLabels)
-    print("accuracy: ", accuracy)
+    print("Test Accuracy = [{:.2f}]".format(accuracy))
 
 
 # basic()
