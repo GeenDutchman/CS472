@@ -191,8 +191,8 @@ def vowel():
     findings = []
     findings.append(["Num Nodes", "Epochs", "Train Accuracy", 'VS accuracy', 'test accuracy'])
     accuracy = bssf[0]
-    doubler = 0
-    num_nodes = 0
+    doubler = 1
+    num_nodes = 1
     bssf = [np.inf, 0]
     while(window > 0):
         num_nodes = num_nodes * doubler
