@@ -211,6 +211,7 @@ def vowel():
         entry.append(MLPClass._calc_l2_err(tData, tLabels))
 
         findings.append(entry)
+        doubler = doubler + 1
 
         if accuracy < bssf[0] and abs(accuracy - bssf[0]) > tolerance:
             bssf = [accuracy, num_nodes]
