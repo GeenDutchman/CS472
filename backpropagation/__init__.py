@@ -6,6 +6,7 @@ from arff import Arff
 
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier as Skl_Classifier
 
 
 
@@ -252,10 +253,50 @@ def vowel():
 
     np.savetxt("vowel_findings_momentum.csv", findings[1:], header=reduce(findings[0]), delimiter=',')
 
+def sci_kit():
+    print("------------------------sci-kit learn------------------")
+    mat = Arff("./tic-tac-toe.arff", label_count=1)
+
+    y = mat.data[:,-1]
+
+    lb = preprocessing.LabelBinarizer()
+    lb.fit(y)
+    y = lb.transform(y)
+
+    data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], y, test_size=.25)
+
+    # going to randomly search learn_rate, number of nodes, number of hidden layers, and momentum
+    for dummy_iterator in range(16): # 4 features times 4 features
+        MLPClass = None
+        real_one = None
+
+        learn_rate = np.random.uniform(0.001, 10)
+        number_of_nodes = int(abs(round(np.random.normal(2*np.shape(data)[1], round(2*np.shape(data)[1] - 0.6)))))
+        hidden_layers = np.random.randint(1, 4)
+        momentum = abs(np.random.normal(0, 0.1))
+
+        nodes = [1 if number_of_nodes == 0 else number_of_nodes] * hidden_layers
+
+        print("learn rate", learn_rate, "layers", nodes, "momentum", momentum)
 
 
-basic()
-debug()
-evaluate()
-iris()
-vowel()
+        MLPClass = MLPClassifier([2*np.shape(data)[1]], lr=0.1, shuffle=True, one_hot=True)
+        MLPClass.fit(data, labels, momentum=0.5, percent_verify=.25)
+
+        real_one = Skl_Classifier(nodes, momentum=momentum, learning_rate_init=learn_rate, activation='logistic', early_stopping=True, validation_fraction=.25)
+        print("x")
+        real_one.fit(data, np.reshape(labels, (-1,)))
+
+        real_accuracy = real_one.score(tData, np.reshape(tLabels, (-1,)))
+        accuracy = MLPClass.score(tData, tLabels)
+
+        print(accuracy, "vs", real_accuracy)
+
+
+
+# basic()
+# debug()
+# evaluate()
+# iris()
+# vowel()
+sci_kit()
