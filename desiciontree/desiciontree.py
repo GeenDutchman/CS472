@@ -29,6 +29,8 @@ class DTClassifier(BaseEstimator,ClassifierMixin)::
 
         """
 
+        # use LabelBinarizer?
+
         return self
 
     def predict(self, X):
