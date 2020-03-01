@@ -1,12 +1,17 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 
+from tree import Tree
+
 ### NOTE: The only methods you are required to have are:
 #   * predict
 #   * fit
 #   * score
 
-class DTClassifier(BaseEstimator,ClassifierMixin)::
+class DTClassifier(BaseEstimator,ClassifierMixin):
+
+
+        
 
     def __init__(self,counts=None):
         """ Initialize class with chosen hyperparameters.
@@ -16,6 +21,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin)::
         Example:
             DT  = DTClassifier()
         """
+        self.counts = counts
 
     def fit(self, X, y):
         """ Fit the data; Make the Desicion tree
@@ -28,7 +34,8 @@ class DTClassifier(BaseEstimator,ClassifierMixin)::
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-
+        indicies = {x for x in range(np.shape(X)[1])}
+        print(indicies)
         # use LabelBinarizer?
 
         return self
@@ -54,4 +61,9 @@ class DTClassifier(BaseEstimator,ClassifierMixin)::
             y (array-li    def _shuffle_data(self, X, y):
         """
         return 0
+
+    def _preprocess(self, X, y):
+        for index in range(np.shape(X)[1]):
+            values, counts = np.uniqe(X[:,index], return_counts=True)
+            print(values, counts)
 
