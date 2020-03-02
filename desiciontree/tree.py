@@ -27,14 +27,18 @@ class Tree:
             return out
 
 
-    def __init__(self, classification, index, partitions):
-        self.root_node = self.Branch(classification, index, partitions)
+    def __init__(self):
+        # self.root_node = self.Branch(classification, index, partitions)
+        self.root_node = None
 
     def newBranch(self, curr_branch: Branch, partition, classification, index, partitions):
+        if self.root_node is None:
+            self.root_node = self.Branch(classification, index, partitions)
+            return self.root_node
         return curr_branch.addChild(partition, self.Branch(classification, index, partitions))
 
     def _getBranch(self, curr_node: Branch, path, path_index):
-        if (len(path) - 1 is path_index):
+        if ((len(path) - 1 is path_index) or (curr_node is None)):
             result = curr_node
             return result
         else:
@@ -53,7 +57,8 @@ class Tree:
     
 
 
-tree = Tree("a", 1, ["b", "c"])
+tree = Tree() #Tree("a", 1, ["b", "c"])
+tree.newBranch(None, 'a', 'a', 1, ['b', 'c'])
 print(tree)
 # def newBranch(self, curr_branch: Branch, partition, classification, index, partitions):
 tree.newBranch(tree.root_node, 'b', 'b', 2, ['c'])
