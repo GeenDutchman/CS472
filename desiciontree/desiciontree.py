@@ -63,7 +63,9 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         return 0
 
     def _preprocess(self, X, y):
+        results = {}
         for index in range(np.shape(X)[1]):
-            values, counts = np.uniqe(X[:,index], return_counts=True)
-            print(values, counts)
+            values, counts = np.unique(X[:,index], return_counts=True)
+            results[index] = (values, counts)
+        return np.shape(y)[0], results
 
