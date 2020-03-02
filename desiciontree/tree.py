@@ -56,14 +56,17 @@ class Tree:
 
     
 
+def demo():
+    tree = Tree() #Tree("a", 1, ["b", "c"])
+    tree.newBranch(None, 'a', 'a', 1, ['b', 'c'])
+    print(tree)
+    # def newBranch(self, curr_branch: Branch, partition, classification, index, partitions):
+    tree.newBranch(tree.root_node, 'b', 'b', 2, ['c'])
+    tree.newBranch(tree.getBranch(['a']), 'c', 'c', 3, ['b'])
+    tree.newBranch(tree.getBranch(['a', 'b']), 'c', 'z', 7, [None])
 
-tree = Tree() #Tree("a", 1, ["b", "c"])
-tree.newBranch(None, 'a', 'a', 1, ['b', 'c'])
-print(tree)
-# def newBranch(self, curr_branch: Branch, partition, classification, index, partitions):
-tree.newBranch(tree.root_node, 'b', 'b', 2, ['c'])
-tree.newBranch(tree.getBranch(['a']), 'c', 'c', 3, ['b'])
-tree.newBranch(tree.getBranch(['a', 'b']), 'c', 'z', 7, [None])
+    print(tree)
 
-print(tree)
+if __name__ == "__main__":
+    demo()
 
