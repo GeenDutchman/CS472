@@ -11,6 +11,8 @@ class Tree:
                 self.partitions[part] = None
 
         def addChild(self, partition, branch):
+            if partition not in self.partitions:
+                raise IndexError("Partition " + str(partition) + " not found on this branch.")
             self.partitions[partition] = branch
             return branch
 
@@ -42,13 +44,11 @@ class Tree:
             raise IndexError("Parent not provided while root is defined")
         elif parent_partition is None:
             raise IndexError("Partition not included")
-        elif parent_partition not in parent_branch:
-            raise IndexError("Partition not found on parent")
         parent_branch.addChild(parent_partition, child_branch)
         return child_branch
 
     def makeAddBranch(self, parent_branch: Branch, parent_partition, classification, index, partitions):
-        return self.addBranch(self.makeBranch(classification, index, partitions), parent_branch=parent_branch)
+        return self.addBranch(self.makeBranch(classification, index, partitions), parent_branch=parent_branch, parent_partition=parent_partition)
 
     def _getBranch(self, curr_node: Branch, path, path_index):
         if ((len(path) - 1 is path_index) or (curr_node is None)):
@@ -71,14 +71,15 @@ class Tree:
 
 def demo():
     tree = Tree() #Tree("a", 1, ["b", "c"])
-    tree.newBranch(None, 'a', 'a', 1, ['b', 'c'])
+    tree.makeAddBranch(None, 'a', 'a', 1, ['b', 'c'])
     print(tree)
     # def newBranch(self, curr_branch: Branch, partition, classification, index, partitions):
-    tree.newBranch(tree.root_node, 'b', 'b', 2, ['c'])
-    tree.newBranch(tree.getBranch(['a']), 'c', 'c', 3, ['b'])
-    tree.newBranch(tree.getBranch(['a', 'b']), 'c', 'z', 7, [None])
+    tree.makeAddBranch(tree.root_node, 'b', 'b', 2, ['c'])
+    tree.makeAddBranch(tree.getBranch(['a']), 'c', 'c', 3, ['b'])
+    tree.makeAddBranch(tree.getBranch(['a', 'b']), 'c', 'z', 7, [None])
 
     print(tree)
+    assert('[a -> b:[b -> c:[z -> None:None , ] , ] , c:[c -> b:None , ] , ]' == str(tree))
 
 if __name__ == "__main__":
     demo()
