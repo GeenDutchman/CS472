@@ -28,32 +28,38 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         highest_index = np.argmax(label_results[1])
         return label_results[0][highest_index]
 
-    def _stopper(self, label_size):
-        if label_size == 1 or label_size == 0:
+    def _stopper(self, label_size, indexes):
+        if label_size <= 1:
+            return True
+        if len(indexes) < 1:
             return True
         return False
 
-    def _fit(self, X, y, branch, indexes):
-        best_branch = (0, None, 0, []) # gain, branch, index, partitions
+    def _fit(self, X, y, indexes):
         out_of, data_results = self._count_unique(X)
         label_size, label_results = self._count_unique(y)
-        if self._stopper(label_size):
-            return None
+        if self._stopper(label_size, indexes):
+            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), -1 if len(indexes) < 1 else indexes[0], [])
         entropy = self._entropy(label_size, label_results)
 
+        best_branch = (0, None, 0, []) # gain, tree, index, partitions
         for i in indexes:
+            # partition based on index
             partitions = self._partition(X, y, i, data_results=data_results)
             partitions_entropy = self._partition_entropy(partitions, out_of)
             gain = entropy - partitions_entropy
-            a_branch = self.tree.makeBranch(self._most_common_class(label_results[0]), i, data_results[i][0])
+            #find partition with best gain
             if gain >= best_branch[0]:
-                best_branch = (gain, a_branch, i, partitions)
-        # self.tree.addBranch(best_branch[1], branch, best_branch[2])
+                child_tree = Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), i, data_results[i][0])
+                best_branch = (gain, child_tree, i, partitions)
+
+        # don't look at the index we just did anymore
         indexes.remove(best_branch[2])
-        for part in best_branch[3]:
-            child_branch = self._fit(part[0], part[1], best_branch[1], indexes)
-            branch.addChild(part[0][best_branch[2]], child_branch)
-        return branch
+        for part in best_branch[3]: #per attribute
+            grandchild_tree = self._fit(part[0], part[1], indexes)
+            parent_partition = part[0][0][best_branch[2]]
+            best_branch[1].addChildTree(grandchild_tree, parent_partition)
+        return best_branch[1]
 
     def fit(self, X, y):
         """ Fit the data; Make the Desicion tree
@@ -67,7 +73,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
 
         """
         indexes = {x for x in range(np.shape(X)[1])}
-        self._fit(X, y, None, indexes)
+        self.tree = self._fit(X, y, indexes)
         print(self.tree)
 
 

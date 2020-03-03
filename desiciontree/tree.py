@@ -33,7 +33,7 @@ class Tree:
         # self.root_node = self.Branch(classification, index, partitions)
         self.root_node = None
 
-    def addChildTree(self, otherTree: Tree, partition):
+    def addChildTree(self, otherTree, partition):
         self.root_node.addChild(partition, otherTree.root_node)
         return self
 
@@ -43,13 +43,13 @@ class Tree:
     def addBranch(self, child_branch, parent_branch=None, parent_partition=None):
         if parent_branch is None and self.root_node is None:
             self.root_node = child_branch
-            return self.root_node
+            return self
         elif parent_branch is None:
             raise IndexError("Parent not provided while root is defined")
         elif parent_partition is None:
             raise IndexError("Partition not included")
         parent_branch.addChild(parent_partition, child_branch)
-        return child_branch
+        return self
 
     def makeAddBranch(self, parent_branch: Branch, parent_partition, classification, index, partitions):
         return self.addBranch(self.makeBranch(classification, index, partitions), parent_branch=parent_branch, parent_partition=parent_partition)
