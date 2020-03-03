@@ -2,7 +2,6 @@ import numpy as np
 
 from desiciontree import DTClassifier
 
-
 def basic():
     a = np.array([['Y', 'Thin', 'N', 'Great'],
                   ['N', 'Deep', 'N', 'Bad'],
@@ -17,10 +16,10 @@ def basic():
     data = a[:, 0:-1]
     labels = a[:, -1].reshape(-1, 1)
 
-    print(data, labels)
-    for index in range(np.shape(a)[1]):
-        values, counts = np.unique(a[:,index], return_counts=True)
-        print(values, counts)
+    # print(data, labels)
+    # for index in range(np.shape(a)[1]):
+    #     values, counts = np.unique(a[:,index], return_counts=True)
+    #     print(values, counts)
 
     classifier = DTClassifier(0)
     classifier.fit(data, labels)
