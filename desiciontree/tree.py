@@ -31,11 +31,24 @@ class Tree:
         # self.root_node = self.Branch(classification, index, partitions)
         self.root_node = None
 
-    def newBranch(self, curr_branch: Branch, partition, classification, index, partitions):
-        if self.root_node is None:
-            self.root_node = self.Branch(classification, index, partitions)
+    def makeBranch(self, classification, index, partitions):
+        return self.Branch(classification, index, partitions)
+    
+    def addBranch(self, child_branch, parent_branch=None, parent_partition=None):
+        if parent_branch is None and self.root_node is None:
+            self.root_node = child_branch
             return self.root_node
-        return curr_branch.addChild(partition, self.Branch(classification, index, partitions))
+        elif parent_branch is None:
+            raise IndexError("Parent not provided while root is defined")
+        elif parent_partition is None:
+            raise IndexError("Partition not included")
+        elif parent_partition not in parent_branch:
+            raise IndexError("Partition not found on parent")
+        parent_branch.addChild(parent_partition, child_branch)
+        return child_branch
+
+    def makeAddBranch(self, parent_branch: Branch, parent_partition, classification, index, partitions):
+        return self.addBranch(self.makeBranch(classification, index, partitions), parent_branch=parent_branch)
 
     def _getBranch(self, curr_node: Branch, path, path_index):
         if ((len(path) - 1 is path_index) or (curr_node is None)):
