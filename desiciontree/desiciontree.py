@@ -43,12 +43,8 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
 
         for i in indexes:
             partitions = self._partition(X, y, i, data_results=data_results)
-            sum = 0
-            for part in partitions:
-                part_label_size, part_label_result = self._count_unique(part[1])
-                fraction = part_label_size / out_of
-                sum = sum + self._entropy(part_label_size, part_label_result) * fraction
-            gain = entropy - sum
+            partitions_entropy = self._partition_entropy(partitions, out_of)
+            gain = entropy - partitions_entropy
             a_branch = self.tree.makeBranch(self._most_common_class(label_results[0]), i, data_results[i][0])
             if gain >= best_branch[0]:
                 best_branch = (gain, a_branch, i, partitions)
@@ -123,6 +119,15 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
             partitions.append((np.array(x_part), np.array(y_part)))
 
         return partitions
+
+    def _partition_entropy(self, partitions, out_of_whole):
+        sum = 0
+        for part in partitions:
+            part_label_size, part_label_result = self._count_unique(part[1])
+            fraction = part_label_size / out_of_whole
+            sum = sum + self._entropy(part_label_size, part_label_result) * fraction
+        return sum
+
 
     def _entropy(self, out_of, values_and_counts):
         sum = 0
