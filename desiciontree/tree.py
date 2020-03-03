@@ -33,6 +33,10 @@ class Tree:
         # self.root_node = self.Branch(classification, index, partitions)
         self.root_node = None
 
+    def addChildTree(self, otherTree: Tree, partition):
+        self.root_node.addChild(partition, otherTree.root_node)
+        return self
+
     def makeBranch(self, classification, index, partitions):
         return self.Branch(classification, index, partitions)
     
