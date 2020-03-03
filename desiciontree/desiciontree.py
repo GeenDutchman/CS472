@@ -28,27 +28,36 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         highest_index = np.argmax(label_results[1])
         return label_results[0][highest_index]
 
+    def _stopper(self, label_size):
+        if label_size == 1 or label_size == 0:
+            return True
+        return False
+
     def _fit(self, X, y, branch, indexes):
-        best_branch = (0, None, 0)
+        best_branch = (0, None, 0, []) # gain, branch, index, partitions
         out_of, data_results = self._count_unique(X)
         label_size, label_results = self._count_unique(y)
+        if self._stopper(label_size):
+            return None
         entropy = self._entropy(label_size, label_results)
 
         for i in indexes:
             partitions = self._partition(X, y, i, data_results=data_results)
             sum = 0
             for part in partitions:
-                print(part, best_branch)
                 part_label_size, part_label_result = self._count_unique(part[1])
                 fraction = part_label_size / out_of
                 sum = sum + self._entropy(part_label_size, part_label_result) * fraction
             gain = entropy - sum
             a_branch = self.tree.makeBranch(self._most_common_class(label_results[0]), i, data_results[i][0])
             if gain >= best_branch[0]:
-                best_branch = (gain, a_branch, i)
-        print(best_branch)
-        self.tree.addBranch(best_branch[1], branch, best_branch[2])
+                best_branch = (gain, a_branch, i, partitions)
+        # self.tree.addBranch(best_branch[1], branch, best_branch[2])
         indexes.remove(best_branch[2])
+        for part in best_branch[3]:
+            child_branch = self._fit(part[0], part[1], best_branch[1], indexes)
+            branch.addChild(part[0][best_branch[2]], child_branch)
+        return branch
 
     def fit(self, X, y):
         """ Fit the data; Make the Desicion tree
@@ -63,6 +72,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         """
         indexes = {x for x in range(np.shape(X)[1])}
         self._fit(X, y, None, indexes)
+        print(self.tree)
 
 
         # use LabelBinarizer?
