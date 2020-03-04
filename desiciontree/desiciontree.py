@@ -93,7 +93,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         results = []
         for x in X:
             results.append(self.tree.traverse(x))
-        return np.reshape(results, (-1, len(results)))
+        return np.reshape(results, (len(results), -1))
 
 
     def score(self, X, y):
