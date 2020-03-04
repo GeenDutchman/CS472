@@ -68,6 +68,20 @@ class Tree:
     def getBranch(self, path):
         return self._getBranch(self.root_node, path, 0)
 
+    def _traverse(self, datapoint, travel_node):
+        next_node = travel_node.getChild(datapoint[travel_node.index])
+        if next_node is None:
+            return travel_node.classification
+        else:
+            return self._traverse(datapoint, next_node)
+
+    def traverse(self, dataPoint):
+        if self.root_node is None:
+            raise IndexError("Tree not populated")
+        travel_node = self.root_node
+        return self._traverse(dataPoint, travel_node)
+        
+
     def __repr__(self):
         return str(self.root_node)
 
