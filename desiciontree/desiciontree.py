@@ -92,7 +92,10 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
             array, shape (n_samples,)
                 Predicted target values per element in X.
         """
-        pass
+        results = []
+        for x in X:
+            results.append(self.tree.traverse(x))
+        return results
 
 
     def score(self, X, y):
