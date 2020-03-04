@@ -17,6 +17,8 @@ class Tree:
             return branch
 
         def getChild(self, partition):
+            if partition not in self.partitions:
+                return None
             return self.partitions[partition]
 
         def __repr__(self):
