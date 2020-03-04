@@ -23,7 +23,9 @@ def basic():
 
     classifier = DTClassifier(0)
     classifier.fit(data, labels)
-    results = classifier.predict([['Y', 'Deep', 'N', 'Good']])
+    lame_test = [['Y', 'Deep', 'N']]
+    results = classifier.predict(lame_test)
     print(results)
+    print(classifier.score(lame_test, [['Good']]))
 
 basic()

@@ -93,7 +93,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         results = []
         for x in X:
             results.append(self.tree.traverse(x))
-        return results
+        return np.reshape(results, (-1, len(results)))
 
 
     def score(self, X, y):
@@ -101,9 +101,15 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
 
         Args:
             X (array-like): A 2D numpy array with data, excluding targets
-            y (array-li    def _shuffle_data(self, X, y):
+            y (array-like): A 2D numpy array of the targets
         """
-        return 0
+        predicted = self.predict(X)
+        count = 0
+        for predict, expected in zip(predicted, y):
+            if predict == expected:
+                count = count + 1
+            
+        return count / np.shape(y)[0]
 
     def _count_unique(self, data):
         data_results = {}
