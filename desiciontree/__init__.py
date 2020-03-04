@@ -44,10 +44,11 @@ def lenses():
 
     dtree = DTClassifier(0)
     dtree.fit(data, labels)
+    print(dtree.tree)
 
     results = dtree.predict(tData)
-    for r, t in zip(results, tLabels):
-        print(r, t)
+    # for r, t in zip(results, tLabels):
+    #     print(r, t)
 
     score = dtree.score(tData, tLabels)
     print("Accuracy=[{:.2f}]".format(score))
@@ -67,6 +68,26 @@ def all_lenses():
     dtree = DTClassifier()
     dtree.fit(lens_split[0], lens_split[2])
     score = dtree.score(all_lens_split[0], all_lens_split[2])
+    print("Accuracy=[{:.2f}]".format(score))
+
+def nan_lenses():
+    print("----------------nan_lenses------------------")
+
+    mat = Arff("./nan_lenses.arff", label_count=1)
+    # data = mat.data[:, 0:-1]
+    # labels = mat.data[:, -1].reshape(-1, 1)
+
+    data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
+
+    dtree = DTClassifier(0)
+    dtree.fit(data, labels)
+    print(dtree.tree)
+
+    results = dtree.predict(tData)
+    # for r, t in zip(results, tLabels):
+    #     print(r, t)
+
+    score = dtree.score(tData, tLabels)
     print("Accuracy=[{:.2f}]".format(score))
 
 def evaluation():
@@ -114,7 +135,7 @@ def voting():
     # labels = mat.data[:, -1].reshape(-1, 1)
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
-    print(data)
+    # print(data)
 
     dtree = DTClassifier()
     dtree.fit(data, labels)
@@ -128,6 +149,7 @@ def voting():
 
 basic()
 lenses()
+nan_lenses()
 all_lenses()
 evaluation()
 cars()

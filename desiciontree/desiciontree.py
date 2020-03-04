@@ -8,10 +8,7 @@ from tree import Tree
 #   * fit
 #   * score
 
-class DTClassifier(BaseEstimator,ClassifierMixin):
-
-
-        
+class DTClassifier(BaseEstimator,ClassifierMixin):        
 
     def __init__(self,counts=None):
         """ Initialize class with chosen hyperparameters.
@@ -23,22 +20,27 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         """
         self.counts = counts
         self.tree = Tree()
+        self.nan_replace = np.nan
 
     def _most_common_class(self, label_results):
+        if len(label_results[1]) == 0:
+            return None
         highest_index = np.argmax(label_results[1])
         return label_results[0][highest_index]
 
-    def _stopper(self, label_size, indexes):
+    def _stopper(self, label_size, indexes, data_size):
         if label_size <= 1:
             return True
         if len(indexes) < 1:
+            return True
+        if data_size <= 0:
             return True
         return False
 
     def _fit(self, X, y, indexes):
         out_of, data_results = self._count_unique(X)
         label_size, label_results = self._count_unique(y)
-        if self._stopper(len(label_results[0][0]), indexes):
+        if self._stopper(len(label_results[0][0]), indexes, out_of):
             return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), -1 if len(indexes) < 1 else indexes.pop(), [])
         entropy = self._entropy(label_size, label_results)
 
@@ -113,8 +115,18 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
 
     def _count_unique(self, data):
         data_results = {}
+        if np.shape(data)[0] == 0:
+            data_results[0] = ([], [])
+            return 0, data_results
         for index in range(np.shape(data)[1]):
-            values, counts = np.unique(data[:,index], return_counts=True)
+            #find all unique non-nan values
+            column = data[:,index]
+            # https://stackoverflow.com/a/37148508 use nan != nan
+            values, counts = np.unique([x for x in column if x==x], return_counts=True)
+            nan_sum = np.size([x for x in column if x!=x])
+            if nan_sum > 0:
+                values = np.append(values, self.nan_replace)
+                counts = np.append(counts, nan_sum)
             data_results[index] = (values, counts)
 
         return np.shape(data)[0], data_results
@@ -127,9 +139,14 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
             x_part = []
             y_part = []
             for data_point_index in range(np.shape(X)[0]):
-                if label == X[data_point_index][attribute_index]:
+                particular_point_label = X[data_point_index][attribute_index]
+                if label == particular_point_label:
                     x_part.append(X[data_point_index])
                     y_part.append(y[data_point_index])
+                elif (label == self.nan_replace or label != label) and np.isnan(particular_point_label):
+                    x_part.append(X[data_point_index])
+                    y_part.append(y[data_point_index])
+
             partitions.append((np.array(x_part), np.array(y_part)))
 
         return partitions

@@ -3,20 +3,29 @@ import numpy as np
 class Tree:
 
     class Branch():
-        def __init__(self, classification, index, partitions):
+        def __init__(self, classification, index, partitions, nan_replace='?Unknown?'):
+            if nan_replace != nan_replace:
+                raise ValueError("argument 'nan_replace' must equal itself")
+            self.nan_replace = nan_replace
             self.index = index
             self.classification = classification
             self.partitions = {}
-            for part in partitions:
+            for part in [x for x in partitions if x==x]: # filter out nan because nan != nan
                 self.partitions[part] = None
+            if len([x for x in partitions if x!=x]) > 0:
+                self.partitions[self.nan_replace] = None
 
         def addChild(self, partition, branch):
+            if partition != partition:
+                partition = self.nan_replace
             if partition not in self.partitions:
                 raise IndexError("Partition " + str(partition) + " not found on this branch.")
             self.partitions[partition] = branch
             return branch
 
         def getChild(self, partition):
+            if partition != partition:
+                partition = self.nan_replace
             if partition not in self.partitions:
                 return None
             return self.partitions[partition]
