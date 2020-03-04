@@ -38,8 +38,8 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
     def _fit(self, X, y, indexes):
         out_of, data_results = self._count_unique(X)
         label_size, label_results = self._count_unique(y)
-        if self._stopper(label_size, indexes):
-            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), -1 if len(indexes) < 1 else indexes[0], [])
+        if self._stopper(len(label_results[0][0]), indexes):
+            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), -1 if len(indexes) < 1 else indexes.pop(), [])
         entropy = self._entropy(label_size, label_results)
 
         best_branch = (0, None, 0, []) # gain, tree, index, partitions
@@ -54,9 +54,10 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
                 best_branch = (gain, child_tree, i, partitions)
 
         # don't look at the index we just did anymore
-        indexes.remove(best_branch[2])
+        to_send_copy = indexes.copy()
+        to_send_copy.remove(best_branch[2])
         for part in best_branch[3]: #per attribute
-            grandchild_tree = self._fit(part[0], part[1], indexes)
+            grandchild_tree = self._fit(part[0], part[1], to_send_copy)
             parent_partition = part[0][0][best_branch[2]]
             best_branch[1].addChildTree(grandchild_tree, parent_partition)
         return best_branch[1]
