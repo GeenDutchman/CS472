@@ -7,7 +7,7 @@ def basic():
                   ['N', 'Deep', 'N', 'Bad'],
                   ['N', 'Stuffed', 'Y', 'Good'],
                   ['Y', 'Stuffed', 'Y', 'Great'],
-                  ['Y', 'Deep', 'N', 'Good'],
+                  #['Y', 'Deep', 'N', 'Good'],
                   ['Y', 'Deep', 'Y', 'Great'],
                   ['N', 'Thin', 'Y', 'Good'],
                   ['Y', 'Deep', 'N', 'Good'],
@@ -23,5 +23,7 @@ def basic():
 
     classifier = DTClassifier(0)
     classifier.fit(data, labels)
+    results = classifier.predict([['Y', 'Deep', 'N', 'Good']])
+    print(results)
 
 basic()

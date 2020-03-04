@@ -75,8 +75,6 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         """
         indexes = {x for x in range(np.shape(X)[1])}
         self.tree = self._fit(X, y, indexes)
-        print(self.tree)
-
 
         # use LabelBinarizer?
 
