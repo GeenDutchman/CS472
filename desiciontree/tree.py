@@ -3,6 +3,7 @@ import numpy as np
 class Tree:
 
     class Branch():
+        serial = 0
         def __init__(self, classification, index, partitions, nan_replace='?Unknown?'):
             if nan_replace != nan_replace:
                 raise ValueError("argument 'nan_replace' must equal itself")
@@ -14,6 +15,8 @@ class Tree:
                 self.partitions[part] = None
             if len([x for x in partitions if x!=x]) > 0:
                 self.partitions[self.nan_replace] = None
+            self.serial_num = Tree.Branch.serial
+            Tree.Branch.serial = Tree.Branch.serial + 1
 
         def addChild(self, partition, branch):
             if partition != partition:
@@ -37,6 +40,15 @@ class Tree:
                 out = out + ":" + str(self.partitions[index])
                 out = out + " , "
             out = out + "]"
+            return out
+
+        def _graph_(self, indent='\t'):
+            out = indent + str(self.serial_num) + ' [label="Split on index ' + str(self.index) + ' categorize as \'' + str(self.classification) + '\'"];\n'
+            for index in self.partitions:
+                child = self.partitions[index]
+                if child is not None:
+                    out = out + child._graph_()
+                    out = out + indent + str(self.serial_num) + ' -> ' + str(child.serial_num) + ';\n'
             return out
 
 
@@ -96,6 +108,14 @@ class Tree:
     def __repr__(self):
         return str(self.root_node)
 
+    def graph(self, name='Decision Tree'):
+        out = "digraph \"" + name + "\" {\n"
+        if self.root_node is not None:
+            out = out + self.root_node._graph_()
+        out = out + "}\n"
+        return out
+        
+
     
 
 def demo():
@@ -109,6 +129,7 @@ def demo():
 
     print(tree)
     assert('[a -> b:[b -> c:[z -> None:None , ] , ] , c:[c -> b:None , ] , ]' == str(tree))
+    print(tree.graph())
 
 if __name__ == "__main__":
     demo()
