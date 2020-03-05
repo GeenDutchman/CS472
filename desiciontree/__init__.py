@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 
 
 from desiciontree import DTClassifier
@@ -46,7 +46,7 @@ def lenses():
     dtree.fit(data, labels)
     print(dtree.tree)
 
-    results = dtree.predict(tData)
+    # results = dtree.predict(tData)
     # for r, t in zip(results, tLabels):
     #     print(r, t)
 
@@ -59,15 +59,15 @@ def all_lenses():
     lens_data = Arff("./lenses.arff", label_count=1)
     all_lens_data = Arff("./all_lenses.arff", label_count=1)
 
-    lens_split = train_test_split(lens_data.data[:, :-1], lens_data.data[:, -1].reshape(-1, 1), test_size=0.0)#[0, 2]
-    all_lens_split = train_test_split(all_lens_data.data[:, :-1], all_lens_data.data[:, -1].reshape(-1, 1), test_size=0)#[1, 3]
-
-    # print(lens_split[0], lens_split[2])
-    # print(all_lens_split[0], all_lens_split[2])
+    lens_train = lens_data.data[:, :-1]
+    lens_label_train = lens_data.data[:, -1].reshape(-1, 1)
+    lens_test = all_lens_data.data[:, :-1]
+    lens_label_test = all_lens_data.data[:, -1].reshape(-1, 1)
 
     dtree = DTClassifier()
-    dtree.fit(lens_split[0], lens_split[2])
-    score = dtree.score(all_lens_split[0], all_lens_split[2])
+    dtree.fit(lens_train, lens_label_train)
+    score = dtree.score(lens_test, lens_label_test)
+    print("Train Accuracy=[{:.2f}]".format(dtree.score(lens_train, lens_label_train)))
     print("Accuracy=[{:.2f}]".format(score))
 
 def nan_lenses():
@@ -83,7 +83,7 @@ def nan_lenses():
     dtree.fit(data, labels)
     print(dtree.tree)
 
-    results = dtree.predict(tData)
+    # results = dtree.predict(tData)
     # for r, t in zip(results, tLabels):
     #     print(r, t)
 
@@ -96,17 +96,18 @@ def evaluation():
     zoo_data = Arff("./zoo.arff", label_count=1)
     all_zoo_data = Arff("./all_zoo.arff", label_count=1)
 
-    zoo_split = train_test_split(zoo_data.data[:, :-1], zoo_data.data[:, -1].reshape(-1, 1), test_size=0.0)#[0, 2]
-    all_zoo_split = train_test_split(all_zoo_data.data[:, :-1], all_zoo_data.data[:, -1].reshape(-1, 1), test_size=0)#[1, 3]
-
-    # print(zoo_split[0], zoo_split[2])
-    # print(all_zoo_split[0], all_zoo_split[2])
+    zoo_train = zoo_data.data[:, :-1]
+    zoo_label_train = zoo_data.data[:, -1].reshape(-1, 1)
+    zoo_test = all_zoo_data.data[:, :-1]
+    zoo_label_test = all_zoo_data.data[:, -1].reshape(-1, 1)
 
     dtree = DTClassifier()
-    dtree.fit(zoo_split[0], zoo_split[2])
-    predicted = dtree.predict(all_zoo_split[0])
+    dtree.fit(zoo_train, zoo_label_train)
+    print("Train Accuracy=[{:.2f}]".format(dtree.score(zoo_train, zoo_label_train)))
+
+    predicted = dtree.predict(zoo_test)
     np.savetxt('predicted_zoo.csv', predicted, delimiter=',')
-    score = dtree.score(all_zoo_split[0], all_zoo_split[2])
+    score = dtree.score(zoo_test, zoo_label_test)
     print("Accuracy=[{:.2f}]".format(score))
 
 def cars():
@@ -114,37 +115,64 @@ def cars():
 
     mat = Arff("./cars.arff", label_count=1)
     # data = mat.data[:, 0:-1]
-    # labels = mat.data[:, -1].reshape(-1, 1)
+    # labels = mat.data[:, -1]#.reshape(-1, 1)
+    splits = 10
+    kfolder = KFold(n_splits=splits)
+
+    scores = []
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
+    best_tree = (0, None)
+    for train, validate in kfolder.split(data, labels):
+        # print(train, validate)
+        dtree = DTClassifier()
+        dtree.fit(data[train], labels[train])
 
-    dtree = DTClassifier()
-    dtree.fit(data, labels)
+        scores.append(dtree.score(data[validate], labels[validate]))
+        if scores[-1] > best_tree[0]:
+            best_tree = (scores[-1], dtree)
 
-    results = dtree.predict(tData)
-    np.savetxt('cars.csv', results, delimiter=',')
-
-    score = dtree.score(tData, tLabels)
-    print("Accuracy=[{:.2f}]".format(score))
+    average = np.sum(scores) / splits
+    scores.append(average)
+    header_text = ''
+    for x in range(splits):
+        header_text = header_text + str(x) + ' '
+    
+    np.savetxt("cars.csv", scores, header=header_text + 'average', delimiter=',')
+    print(scores)
+    print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
 
 def voting():
     print("----------------voting------------------")
 
     mat = Arff("./voting.arff", label_count=1)
-    # data = mat.data[:, 0:-1]
-    # labels = mat.data[:, -1].reshape(-1, 1)
+     # data = mat.data[:, 0:-1]
+    # labels = mat.data[:, -1]#.reshape(-1, 1)
+    splits = 10
+    kfolder = KFold(n_splits=splits)
+
+    scores = []
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
-    # print(data)
+    best_tree = (0, None)
+    for train, validate in kfolder.split(data, labels):
+        # print(train, validate)
+        dtree = DTClassifier()
+        dtree.fit(data[train], labels[train])
 
-    dtree = DTClassifier()
-    dtree.fit(data, labels)
+        scores.append(dtree.score(data[validate], labels[validate]))
+        if scores[-1] > best_tree[0]:
+            best_tree = (scores[-1], dtree)
 
-    results = dtree.predict(tData)
-    np.savetxt('voting.csv', results, delimiter=',')
-
-    score = dtree.score(tData, tLabels)
-    print("Accuracy=[{:.2f}]".format(score))
+    average = np.sum(scores) / splits
+    scores.append(average)
+    header_text = ''
+    for x in range(splits):
+        header_text = header_text + str(x) + ' '
+    
+    np.savetxt("voting.csv", scores, header=header_text + 'average', delimiter=',')
+    print(scores)
+    print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
 
 
 basic()
