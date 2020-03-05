@@ -4,11 +4,12 @@ class Tree:
 
     class Branch():
         serial = 0
-        def __init__(self, classification, index, partitions, nan_replace='?Unknown?'):
+        def __init__(self, classification, index, partitions, nan_replace='?Unknown?', friendly_split=None):
             if nan_replace != nan_replace:
                 raise ValueError("argument 'nan_replace' must equal itself")
             self.nan_replace = nan_replace
             self.index = index
+            self.friendly_split = friendly_split
             self.classification = classification
             self.partitions = {}
             for part in [x for x in partitions if x==x]: # filter out nan because nan != nan
@@ -43,12 +44,19 @@ class Tree:
             return out
 
         def _graph_(self, indent='\t'):
-            out = indent + str(self.serial_num) + ' [label="Split on index ' + str(self.index) + ' categorize as \'' + str(self.classification) + '\'"];\n'
+            split_index = "index " + str(self.index)
+            split_text = "Split on "
+            if self.friendly_split is not None:
+                split_text = split_text + "'" + str(self.friendly_split) + "' [" + split_index + "]"
+            else:
+                split_text = split_text + split_index
+
+            out = indent + str(self.serial_num) + ' [label="' + split_text + ' categorize as \'' + str(self.classification) + '\'"];\n'
             for index in self.partitions:
                 child = self.partitions[index]
                 if child is not None:
                     out = out + child._graph_()
-                    out = out + indent + str(self.serial_num) + ' -> ' + str(child.serial_num) + ';\n'
+                    out = out + indent + str(self.serial_num) + ' -> ' + str(child.serial_num) + '[label="' + str(index) + '"];\n'
             return out
 
 
@@ -60,8 +68,8 @@ class Tree:
         self.root_node.addChild(partition, otherTree.root_node)
         return self
 
-    def makeBranch(self, classification, index, partitions):
-        return self.Branch(classification, index, partitions)
+    def makeBranch(self, classification, index, partitions, friendly_split=None):
+        return self.Branch(classification, index, partitions, friendly_split=friendly_split)
     
     def addBranch(self, child_branch, parent_branch=None, parent_partition=None):
         if parent_branch is None and self.root_node is None:
@@ -74,8 +82,8 @@ class Tree:
         parent_branch.addChild(parent_partition, child_branch)
         return self
 
-    def makeAddBranch(self, parent_branch: Branch, parent_partition, classification, index, partitions):
-        return self.addBranch(self.makeBranch(classification, index, partitions), parent_branch=parent_branch, parent_partition=parent_partition)
+    def makeAddBranch(self, parent_branch: Branch, parent_partition, classification, index, partitions, friendly_split=None):
+        return self.addBranch(self.makeBranch(classification, index, partitions, friendly_split=friendly_split), parent_branch=parent_branch, parent_partition=parent_partition)
 
     def _getBranch(self, curr_node: Branch, path, path_index):
         if ((len(path) - 1 is path_index) or (curr_node is None)):

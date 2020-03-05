@@ -10,7 +10,7 @@ from tree import Tree
 
 class DTClassifier(BaseEstimator,ClassifierMixin):        
 
-    def __init__(self,counts=None):
+    def __init__(self,counts=None,features=None):
         """ Initialize class with chosen hyperparameters.
 
         Args:
@@ -18,6 +18,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         Example:
             DT  = DTClassifier()
         """
+        self.features = features
         self.counts = counts
         self.tree = Tree()
         self.nan_replace = np.nan
@@ -41,7 +42,8 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         out_of, data_results = self._count_unique(X)
         label_size, label_results = self._count_unique(y)
         if self._stopper(len(label_results[0][0]), indexes, out_of):
-            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), -1 if len(indexes) < 1 else indexes.pop(), [])
+            index = -1 if len(indexes) < 1 else indexes.pop()
+            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), index, [])
         entropy = self._entropy(label_size, label_results)
 
         best_branch = (0, None, 0, []) # gain, tree, index, partitions
@@ -52,7 +54,10 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
             gain = entropy - partitions_entropy
             #find partition with best gain
             if gain >= best_branch[0]:
-                child_tree = Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), i, data_results[i][0])
+                friendly_split = None
+                if self.features is not None:
+                    friendly_split = self.features[i]
+                child_tree = Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), i, data_results[i][0], friendly_split=friendly_split)
                 best_branch = (gain, child_tree, i, partitions)
 
         # don't look at the index we just did anymore
@@ -167,4 +172,14 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
                 fraction = count / out_of
                 sum = sum - fraction * np.log2(fraction)
         return sum
+
+    def graph(self):
+        if self.tree is None:
+            return "No graph"
+        return self.tree.graph()
+    
+
+    def __repr__(self):
+        return self.graph()
+
 
