@@ -43,7 +43,7 @@ class Tree:
             out = out + "]"
             return out
 
-        def _graph_(self, indent='\t'):
+        def _graph_(self, indent='\t', class_translator=lambda x: x):
             split_index = "index " + str(self.index)
             split_text = "Split on "
             if self.friendly_split is not None:
@@ -51,11 +51,14 @@ class Tree:
             else:
                 split_text = split_text + split_index
 
-            out = indent + str(self.serial_num) + ' [label="' + split_text + ' categorize as \'' + str(self.classification) + '\'"];\n'
+            translated = str(class_translator(self.classification))
+            if translated != str(self.classification):
+                translated = translated + " [" + str(self.classification) + "]"
+            out = indent + str(self.serial_num) + ' [label="' + split_text + '.\n Categorize as:' + translated + '"];\n'
             for index in self.partitions:
                 child = self.partitions[index]
                 if child is not None:
-                    out = out + child._graph_()
+                    out = out + child._graph_(indent=indent, class_translator=class_translator)
                     out = out + indent + str(self.serial_num) + ' -> ' + str(child.serial_num) + '[label="' + str(index) + '"];\n'
             return out
 
@@ -116,10 +119,10 @@ class Tree:
     def __repr__(self):
         return str(self.root_node)
 
-    def graph(self, name='Decision Tree'):
+    def graph(self, name='Decision Tree', class_translator=lambda x: x):
         out = "digraph \"" + name + "\" {\n"
         if self.root_node is not None:
-            out = out + self.root_node._graph_()
+            out = out + self.root_node._graph_(class_translator=class_translator)
         out = out + "}\n"
         return out
         

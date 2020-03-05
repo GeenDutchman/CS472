@@ -32,9 +32,9 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
     def _stopper(self, label_size, indexes, data_size):
         if label_size <= 1:
             return True
-        if len(indexes) < 1:
+        if len(indexes) <= 1:
             return True
-        if data_size <= 0:
+        if data_size <= 1:
             return True
         return False
 
@@ -173,10 +173,10 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
                 sum = sum - fraction * np.log2(fraction)
         return sum
 
-    def graph(self):
+    def graph(self, class_translator=lambda x: x):
         if self.tree is None:
             return "No graph"
-        return self.tree.graph()
+        return self.tree.graph(class_translator=class_translator)
     
 
     def __repr__(self):

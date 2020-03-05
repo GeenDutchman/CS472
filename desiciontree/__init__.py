@@ -144,7 +144,7 @@ def cars():
     print(scores)
     print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
     f = open("cars_tree", "w")
-    f.write(dtree.graph())
+    f.write(dtree.graph(class_translator=lambda x: mat.attr_value(-1, x)))
     f.close()
 
 def voting():
@@ -179,7 +179,7 @@ def voting():
     print(scores)
     print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
     f = open("voting_tree", "w")
-    f.write(dtree.graph())
+    f.write(dtree.graph(class_translator=lambda x: mat.attr_value(-1, x)))
     f.close()
 
 def sk_cars():
@@ -287,12 +287,12 @@ def soybean():
 
 
 basic()
-# lenses()
-# nan_lenses()
-# all_lenses()
-# evaluation()
-# cars()
-# voting()
-# sk_cars()
-# sk_voting()
-# soybean()
+lenses()
+nan_lenses()
+all_lenses()
+evaluation()
+cars()
+voting()
+sk_cars()
+sk_voting()
+soybean()
