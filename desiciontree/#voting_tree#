@@ -1,0 +1,136 @@
+digraph "Decision Tree" {
+	1227 [label="Split on 'physician-fee-freeze' [index 3].
+ Categorize as:'democrat' [0.0]"];
+	1230 [label="Split on 'adoption-of-the-budget-resolution' [index 2].
+ Categorize as:'democrat' [0.0]"];
+	1235 [label="Split on 'education-spending' [index 11].
+ Categorize as:'democrat' [0.0]"];
+	1240 [label="Split on 'duty-free-exports' [index 14].
+ Categorize as:'democrat' [0.0]"];
+	1244 [label="Split on 'religious-groups-in-schools' [index 5].
+ Categorize as:'democrat' [0.0]"];
+	1245 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+1244 -> 1245[label="0.0"];
+	1246 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'democrat' [0.0]"];
+	1244 -> 1246[label="1.0"];
+	1247 [label="Split on 'el-salvador-aid' [index 4].
+ Categorize as:'democrat' [0.0]"];
+	1244 -> 1247[label="?Unknown?"];
+	1240 -> 1244[label="0.0"];
+	1248 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'democrat' [0.0]"];
+	1240 -> 1248[label="1.0"];
+	1249 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'democrat' [0.0]"];
+	1240 -> 1249[label="?Unknown?"];
+	1235 -> 1240[label="0.0"];
+	1250 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'democrat' [0.0]"];
+	1235 -> 1250[label="1.0"];
+	1251 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'republican' [1.0]"];
+	1235 -> 1251[label="?Unknown?"];
+	1230 -> 1235[label="0.0"];
+	1252 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'democrat' [0.0]"];
+	1230 -> 1252[label="1.0"];
+	1253 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'democrat' [0.0]"];
+	1230 -> 1253[label="?Unknown?"];
+	1227 -> 1230[label="0.0"];
+	1256 [label="Split on 'synfuels-corporation-cutback' [index 10].
+ Categorize as:'republican' [1.0]"];
+	1259 [label="Split on 'adoption-of-the-budget-resolution' [index 2].
+ Categorize as:'republican' [1.0]"];
+	1260 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+	1259 -> 1260[label="0.0"];
+	1262 [label="Split on 'export-administration-act-south-africa' [index 15].
+ Categorize as:'republican' [1.0]"];
+	1263 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'republican' [1.0]"];
+	1262 -> 1263[label="1.0"];
+	1269 [label="Split on 'superfund-right-to-sue' [index 12].
+ Categorize as:'democrat' [0.0]"];
+	1270 [label="Split on 'el-salvador-aid' [index 4].
+ Categorize as:'republican' [1.0]"];
+	1269 -> 1270[label="0.0"];
+	1271 [label="Split on 'religious-groups-in-schools' [index 5].
+ Categorize as:'democrat' [0.0]"];
+	1269 -> 1271[label="1.0"];
+	1262 -> 1269[label="?Unknown?"];
+	1259 -> 1262[label="1.0"];
+	1272 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'republican' [1.0]"];
+	1259 -> 1272[label="?Unknown?"];
+	1256 -> 1259[label="0.0"];
+	1275 [label="Split on 'education-spending' [index 11].
+ Categorize as:'republican' [1.0]"];
+	1277 [label="Split on 'export-administration-act-south-africa' [index 15].
+ Categorize as:'democrat' [0.0]"];
+	1280 [label="Split on 'crime' [index 13].
+ Categorize as:'democrat' [0.0]"];
+	1281 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+	1280 -> 1281[label="0.0"];
+	1282 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'democrat' [0.0]"];
+	1280 -> 1282[label="1.0"];
+	1277 -> 1280[label="0.0"];
+	1292 [label="Split on 'superfund-right-to-sue' [index 12].
+ Categorize as:'republican' [1.0]"];
+	1296 [label="Split on 'immigration' [index 9].
+ Categorize as:'democrat' [0.0]"];
+	1297 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'democrat' [0.0]"];
+	1296 -> 1297[label="0.0"];
+	1298 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'republican' [1.0]"];
+	1296 -> 1298[label="1.0"];
+	1292 -> 1296[label="0.0"];
+	1299 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+	1292 -> 1299[label="1.0"];
+	1277 -> 1292[label="1.0"];
+	1300 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'democrat' [0.0]"];
+	1277 -> 1300[label="?Unknown?"];
+	1275 -> 1277[label="0.0"];
+	1302 [label="Split on 'adoption-of-the-budget-resolution' [index 2].
+ Categorize as:'republican' [1.0]"];
+	1303 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+	1302 -> 1303[label="0.0"];
+	1306 [label="Split on 'immigration' [index 9].
+ Categorize as:'republican' [1.0]"];
+	1307 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'democrat' [0.0]"];
+	1306 -> 1307[label="0.0"];
+	1308 [label="Split on 'el-salvador-aid' [index 4].
+ Categorize as:'republican' [1.0]"];
+	1306 -> 1308[label="1.0"];
+	1302 -> 1306[label="1.0"];
+	1275 -> 1302[label="1.0"];
+	1309 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+	1275 -> 1309[label="?Unknown?"];
+	1256 -> 1275[label="1.0"];
+	1310 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'republican' [1.0]"];
+	1256 -> 1310[label="?Unknown?"];
+	1227 -> 1256[label="1.0"];
+	1318 [label="Split on 'education-spending' [index 11].
+ Categorize as:'democrat' [0.0]"];
+	1319 [label="Split on 'handicapped-infants' [index 0].
+ Categorize as:'democrat' [0.0]"];
+	1318 -> 1319[label="0.0"];
+	1320 [label="Split on 'water-project-cost-sharing' [index 1].
+ Categorize as:'republican' [1.0]"];
+	1318 -> 1320[label="1.0"];
+	1321 [label="Split on 'adoption-of-the-budget-resolution' [index 2].
+ Categorize as:'democrat' [0.0]"];
+	1318 -> 1321[label="?Unknown?"];
+	1227 -> 1318[label="?Unknown?"];
+}
