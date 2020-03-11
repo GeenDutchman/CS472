@@ -43,7 +43,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         label_size, label_results = self._count_unique(y)
         if self._stopper(len(label_results[0][0]), indexes, out_of):
             index = -1 if len(indexes) < 1 else indexes.pop()
-            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), index, [])
+            return Tree().makeAddBranch(None, None, self._most_common_class(label_results[0]), index, [], friendly_split=self.features[index] if (self.features is not None and len(self.features) > 0 and len(self.features) > abs(index)) else None)
         entropy = self._entropy(label_size, label_results)
 
         best_branch = (0, None, 0, []) # gain, tree, index, partitions

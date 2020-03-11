@@ -1,0 +1,78 @@
+---------------basic--------------
+[Good -> N:[Bad -> N:[Bad -> ] , Y:[Good -> ] , ] , Y:[Great -> N:[Good -> ] , Y:[Great -> ] , ] , ]
+[['Good']]
+1.0
+digraph "Decision Tree" {
+	0 [label="Split on 'Meat' [index 0].\n Categorize as:Good"];
+	2 [label="Split on 'Veggies' [index 2].\n Categorize as:Bad"];
+	3 [label="Split on 'Crust' [index 1].\n Categorize as:Bad"];
+	2 -> 3[label="N"];
+	4 [label="Split on 'Classification' [index -1].\n Categorize as:Good"];
+	2 -> 4[label="Y"];
+	0 -> 2[label="N"];
+	6 [label="Split on 'Veggies' [index 2].\n Categorize as:Great"];
+	7 [label="Split on 'Crust' [index 1].\n Categorize as:Good"];
+	6 -> 7[label="N"];
+	8 [label="Split on 'Classification' [index -1].\n Categorize as:Great"];
+	6 -> 8[label="Y"];
+	0 -> 6[label="Y"];
+}
+
+----------------lenses------------------
+[2.0 -> 0.0:[2.0 -> ] , 1.0:[0.0 -> 0.0:[0.0 -> ] , 1.0:[1.0 -> ] , ] , ]
+Accuracy=[0.67]
+----------------nan_lenses------------------
+[2.0 -> 0.0:[2.0 -> ] , 1.0:[0.0 -> 0.0:[0.0 -> ] , 1.0:[1.0 -> ] , ] , ]
+Accuracy=[0.83]
+---------all-lenses----------
+Train Accuracy=[0.88]
+Accuracy=[0.33]
+----------------evaluation---------------
+Train Accuracy=[1.00]
+Accuracy=[0.14]
+----------------cars------------------
+[[0.8307692307692308, 0.8615384615384616, 0.8153846153846154, 0.8153846153846154, 0.7615384615384615, 0.7692307692307693, 0.7984496124031008, 0.8449612403100775, 0.8294573643410853, 0.8294573643410853, 0.8156171735241502], [0.8164665523156089, 0.8130360205831904, 0.8181818181818182, 0.8181818181818182, 0.8241852487135506, 0.823327615780446, 0.8200514138817481, 0.8149100257069408, 0.8140531276778064, 0.81662382176521, 0.8179017462788138]]
+Average CV accuracy: 0.82
+Best tree accuracy: 0.79
+----------------voting------------------
+[[0.9090909090909091, 0.9090909090909091, 0.9393939393939394, 0.8787878787878788, 0.9696969696969697, 0.9696969696969697, 0.96875, 0.9375, 1.0, 0.96875, 0.9450757575757576], [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9965986394557823, 0.9965986394557823, 0.9965986394557823, 0.9965986394557823, 0.9986394557823131]]
+Average CV accuracy: 0.95
+Best tree accuracy: 0.91
+------------sk_cars----------
+[[0.9615384615384616, 0.9461538461538461, 0.9538461538461539, 0.9615384615384616, 0.9692307692307692, 0.9846153846153847, 0.9767441860465116, 0.9534883720930233, 0.9767441860465116, 0.9689922480620154, 0.9652892069171137], [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+Average CV accuracy: 0.97
+Best tree accuracy: 0.99
+----------------sk_voting------------------
+[[0.9393939393939394, 0.9090909090909091, 0.8787878787878788, 0.9393939393939394, 0.9696969696969697, 1.0, 0.90625, 0.96875, 0.9375, 0.96875, 0.9417613636363636], [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+Average CV accuracy: 0.94
+Best tree accuracy: 0.95
+----------------soybean------------------
+max depth 5 max features 0.2380855646839111
+score update 0.8076923076923077
+max depth 13 max features 0.6389397597427037
+score update 0.9038461538461539
+score update 0.9423076923076923
+score update 0.9607843137254902
+max depth 26 max features 0.5665256094750724
+score update 0.9803921568627451
+max depth 32 max features 0.46573590905441997
+max depth 26 max features 0.5573279946896156
+max depth 8 max features 0.20211708081559465
+max depth 18 max features 0.8612289243039644
+max depth 17 max features 0.9161770872570899
+max depth 12 max features 0.46635694997738975
+score update 1.0
+max depth 23 max features 0.760336150936432
+max depth 4 max features 0.4241352698800319
+max depth 29 max features 0.9480497641718952
+max depth 34 max features 0.19100119852977127
+max depth 14 max features 0.6531225483014844
+max depth 8 max features 0.97266064653321
+max depth 31 max features 0.46335639408212337
+(1.0, 0.9631236442516269, DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=12,
+            max_features=0.46635694997738975, max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, presort=False, random_state=None,
+            splitter='best'), 12, 0.46635694997738975)
+Best tree accuracy: 0.94

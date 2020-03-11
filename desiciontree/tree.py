@@ -54,7 +54,7 @@ class Tree:
             translated = str(class_translator(self.classification))
             if translated != str(self.classification):
                 translated = translated + " [" + str(self.classification) + "]"
-            out = indent + str(self.serial_num) + ' [label="' + split_text + '.\n Categorize as:' + translated + '"];\n'
+            out = indent + str(self.serial_num) + ' [label="' + split_text + '.\\n Categorize as:' + translated + '"];\n'
             for index in self.partitions:
                 child = self.partitions[index]
                 if child is not None:

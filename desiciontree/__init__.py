@@ -121,7 +121,7 @@ def cars():
     splits = 10
     kfolder = KFold(n_splits=splits)
 
-    scores = []
+    scores = [[],[]]
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
     best_tree = (0, None)
@@ -130,18 +130,21 @@ def cars():
         dtree = DTClassifier(features=mat.get_attr_names())
         dtree.fit(data[train], labels[train])
 
-        scores.append(dtree.score(data[validate], labels[validate]))
-        if scores[-1] > best_tree[0]:
-            best_tree = (scores[-1], dtree)
+        scores[0].append(dtree.score(data[validate], labels[validate]))
+        scores[1].append(dtree.score(data[train], labels[train]))
+        if scores[0][-1] > best_tree[0]:
+            best_tree = (scores[0][-1], dtree)
 
-    average = np.sum(scores) / splits
-    scores.append(average)
+    average = np.sum(scores, axis=1) / splits
+    scores[0].append(average[0])
+    scores[1].append(average[1])
     header_text = ''
     for x in range(splits):
         header_text = header_text + str(x) + ' '
     
     np.savetxt("cars.csv", scores, header=header_text + 'average', delimiter=',')
     print(scores)
+    print('Average CV accuracy: {:.2f}'.format(scores[0][-1]))
     print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
     f = open("cars_tree", "w")
     f.write(dtree.graph(class_translator=lambda x: mat.attr_value(-1, x)))
@@ -156,7 +159,7 @@ def voting():
     splits = 10
     kfolder = KFold(n_splits=splits)
 
-    scores = []
+    scores = [[],[]]
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
     best_tree = (0, None)
@@ -165,18 +168,21 @@ def voting():
         dtree = DTClassifier(features=mat.get_attr_names())
         dtree.fit(data[train], labels[train])
 
-        scores.append(dtree.score(data[validate], labels[validate]))
-        if scores[-1] > best_tree[0]:
-            best_tree = (scores[-1], dtree)
+        scores[0].append(dtree.score(data[validate], labels[validate]))
+        scores[1].append(dtree.score(data[train], labels[train]))
+        if scores[0][-1] > best_tree[0]:
+            best_tree = (scores[0][-1], dtree)
 
-    average = np.sum(scores) / splits
-    scores.append(average)
+    average = np.sum(scores, axis=1) / splits
+    scores[0].append(average[0])
+    scores[1].append(average[1])
     header_text = ''
     for x in range(splits):
         header_text = header_text + str(x) + ' '
     
     np.savetxt("voting.csv", scores, header=header_text + 'average', delimiter=',')
     print(scores)
+    print('Average CV accuracy: {:.2f}'.format(scores[0][-1]))
     print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
     f = open("voting_tree", "w")
     f.write(dtree.graph(class_translator=lambda x: mat.attr_value(-1, x)))
@@ -190,7 +196,7 @@ def sk_cars():
     splits = 10
     kfolder = KFold(n_splits=splits)
 
-    scores = []
+    scores = [[],[]]
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
     best_tree = (0, None)
@@ -199,18 +205,21 @@ def sk_cars():
         dtree = DecisionTreeClassifier()
         dtree.fit(data[train], labels[train])
 
-        scores.append(dtree.score(data[validate], labels[validate]))
-        if scores[-1] > best_tree[0]:
-            best_tree = (scores[-1], dtree)
+        scores[0].append(dtree.score(data[validate], labels[validate]))
+        scores[1].append(dtree.score(data[train], labels[train]))
+        if scores[0][-1] > best_tree[0]:
+            best_tree = (scores[0][-1], dtree)
 
-    average = np.sum(scores) / splits
-    scores.append(average)
+    average = np.sum(scores, axis=1) / splits
+    scores[0].append(average[0])
+    scores[1].append(average[1])
     header_text = ''
     for x in range(splits):
         header_text = header_text + str(x) + ' '
     
     np.savetxt("sk_cars.csv", scores, header=header_text + 'average', delimiter=',')
     print(scores)
+    print('Average CV accuracy: {:.2f}'.format(scores[0][-1]))
     print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
 
 def sk_voting():
@@ -222,7 +231,7 @@ def sk_voting():
     splits = 10
     kfolder = KFold(n_splits=splits)
 
-    scores = []
+    scores = [[],[]]
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
     best_tree = (0, None)
@@ -231,18 +240,21 @@ def sk_voting():
         dtree = DecisionTreeClassifier()
         dtree.fit(data[train], labels[train])
 
-        scores.append(dtree.score(data[validate], labels[validate]))
-        if scores[-1] > best_tree[0]:
-            best_tree = (scores[-1], dtree)
+        scores[0].append(dtree.score(data[validate], labels[validate]))
+        scores[1].append(dtree.score(data[train], labels[train]))
+        if scores[0][-1] > best_tree[0]:
+            best_tree = (scores[0][-1], dtree)
 
-    average = np.sum(scores) / splits
-    scores.append(average)
+    average = np.sum(scores, axis=1) / splits
+    scores[0].append(average[0])
+    scores[1].append(average[1])
     header_text = ''
     for x in range(splits):
         header_text = header_text + str(x) + ' '
     
     np.savetxt("sk_voting.csv", scores, header=header_text + 'average', delimiter=',')
     print(scores)
+    print('Average CV accuracy: {:.2f}'.format(scores[0][-1]))
     print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
 
 def soybean():
@@ -256,7 +268,7 @@ def soybean():
 
     data, tData, labels, tLabels = train_test_split(mat.data[:, :-1], mat.data[:, -1].reshape(-1, 1), test_size=.25)
 
-    best_tree = (0, None, -.1, -.1)
+    best_tree = (0, 0, None, -.1, -.1)
 
     trace = []
 
@@ -271,19 +283,20 @@ def soybean():
             dtree.fit(data[train], labels[train])
 
             score = dtree.score(data[validate], labels[validate])
+            train_score = dtree.score(data[train], labels[train])
 
-            trace.append([dummy_iterator, which_split, score, max_depth, max_features])
+            trace.append([dummy_iterator, which_split, score, train_score, max_depth, max_features])
             which_split = which_split + 1
 
             if score > best_tree[0]:
                 print("score update", score)
-                best_tree = (score, dtree, max_depth, max_features)
+                best_tree = (score, train_score, dtree, max_depth, max_features)
 
     print(best_tree)
-    print('Best tree accuracy: {:.2f}'.format(best_tree[1].score(tData, tLabels)))
-    np.savetxt("soybean.csv", trace, delimiter=',', header="iteration_of_10_fold,which_fold,score,max_depth,max_features")
-    export_graphviz(best_tree[1], out_file="soybean_tree")
-    export_graphviz(best_tree[1], out_file="soybean_tree_truncated", max_depth=5)
+    print('Best tree accuracy: {:.2f}'.format(best_tree[2].score(tData, tLabels)))
+    np.savetxt("soybean.csv", trace, delimiter=',', header="iteration_of_10_fold,which_fold,score,train_score,max_depth,max_features")
+    export_graphviz(best_tree[2], out_file="soybean_tree")
+    export_graphviz(best_tree[2], out_file="soybean_tree_truncated", max_depth=5)
 
 
 basic()
