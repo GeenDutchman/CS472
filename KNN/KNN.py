@@ -1,8 +1,6 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-
-
 class KNNClassifier(BaseEstimator,ClassifierMixin):
 
 
@@ -53,7 +51,7 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
             else:
                 results[neighbor[1]] = 1 if self.weight_type == "no_weight" else inverse_distance(neighbor[0])
 
-        return max(results, key=labda k: results[k])
+        return max(results, key=lambda k: results[k])
 
 
     def predict(self,data):
