@@ -14,6 +14,18 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         self.weight_type = weight_type
 
 
+    def _distance(self, pointOne, pointTwo, diff_exponet=1, rooter=1):
+        total = 0
+        for x, y in zip(pointOne, pointTwo):
+            if type(x) != type(y):
+                total += self._default_diff ** diff_exponet
+            elif isinstance(x, (float, int)):
+                total += abs(x - y) ** diff_exponet
+            else:
+                total += self._default_diff  ** diff_exponet if x != y else self._default_same ** diff_exponet 
+
+        return total ** float(rooter)
+
 
     def fit(self,data,labels):
         """ Fit the data; run the algorithm (for this lab really just saves the data :D)
