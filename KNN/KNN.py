@@ -1,15 +1,17 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
+from itertools import zip_longest
 
 class KNNClassifier(BaseEstimator,ClassifierMixin):
 
 
-    def __init__(self,labeltype=[],weight_type='inverse_distance',k=3): ## add parameters here
+    def __init__(self,labeltype=[],weight_type='inverse_distance',k=3,regression=False): ## add parameters here
         """
         Args:
             columntype for each column tells you if continues[real] or if nominal.
             weight_type: inverse_distance voting or if non distance weighting. Options = ["no_weight","inverse_distance"]
         """
+        self.regression = regression
         self.columntype = labeltype
         self.weight_type = weight_type
         self._default_diff = 1
@@ -19,7 +21,7 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
 
     def _distance(self, pointOne, pointTwo, diff_exponet=2, rooter=0.5):
         total = 0
-        for x, y in zip(pointOne, pointTwo):
+        for x, y, col_type in zip_longest(pointOne, pointTwo, self.columntype, fillvalue="real"):
             # if type(x) != type(y):
             #     total += self._default_diff ** diff_exponet
             # else:
@@ -46,14 +48,26 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
     def _analyze_neighbors(self, neighbors):
         inverse_distance = lambda dist: dist ** -2
         results = {}
-        for neighbor in neighbors:
-            this_neighbor = 1 if self.weight_type == "no_weight" else inverse_distance(neighbor[0])
-            if neighbor[1] in results:
-                results[neighbor[1]] += this_neighbor
-            else:
-                results[neighbor[1]] = this_neighbor
+        if not self.regression:
+            for neighbor in neighbors:
+                this_neighbor = 1 if self.weight_type == "no_weight" else inverse_distance(neighbor[0])
+                if neighbor[1] in results:
+                    results[neighbor[1]] += this_neighbor
+                else:
+                    results[neighbor[1]] = this_neighbor
 
-        return max(results, key=lambda k: results[k])
+            return max(results, key=lambda k: results[k])
+        else:
+            inverses = []
+            numerator = np.zeros(np.shape(neighbors[0][2]))
+            for neighbor in neighbors:
+                if self.weight_type == 'inverse_distance':
+                    inverses.append(inverse_distance(neighbor[0]))
+                else:
+                    inverses.append(1)
+                numerator = numerator + (inverses[-1] * neighbor[2])
+
+            return numerator / np.sum(inverses)
 
 
     def predict(self,data):
@@ -70,14 +84,14 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         for predict_index in range(predict_instances):
             neighbors = [] # dist, label
             for stored_index in range(stored_instances):
-                neighbors.append((self._distance(self.data[stored_index], data[predict_index]), self.data_labels[stored_index][0]))
-            neighbors = sorted(neighbors)[:self.k]
+                neighbors.append((self._distance(self.data[stored_index], data[predict_index]), self.data_labels[stored_index][0], data[predict_index]))
+            neighbors = sorted(neighbors, key=lambda x: x[0])[:self.k]
             results.append(self._analyze_neighbors(neighbors))   
         
         return results, np.shape(results)
 
     #Returns the Mean score given input data and labels
-    def score(self, X, y, predict_results=None):
+    def score(self, X, y, predict_results=None, style="accuracy"):
             """ Return accuracy of model on a given dataset. Must implement own score function.
             Args:
                     X (array-like): A 2D numpy array with data, excluding targets
@@ -89,10 +103,18 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
             results = predict_results
             if results is None:
                 results = np.reshape(self.predict(X)[0], np.shape(y))
-            correct = 0
-            for scored, expected in zip(results, y):
-                if scored == expected:
-                    correct += 1
-            return 0 if len(results) == 0 else (correct / len(results)) * 100
+            if style=='accuracy':
+                correct = 0
+                for scored, expected in zip(results, y):
+                    if scored == expected:
+                        correct += 1
+                return 0 if len(results) == 0 else (correct / len(results)) * 100.0
+            if style=='mse':
+                summer = 0
+                count = 0
+                for scored, expected in zip(results, y):
+                    summer = summer + ((scored - expected) ** 2)
+                    count = count + 1
+                return summer / count
 
 
