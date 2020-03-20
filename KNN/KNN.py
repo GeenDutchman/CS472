@@ -20,13 +20,13 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
     def _distance(self, pointOne, pointTwo, diff_exponet=2, rooter=0.5):
         total = 0
         for x, y in zip(pointOne, pointTwo):
-            if type(x) != type(y):
-                total += self._default_diff ** diff_exponet
-            else:
-                try:
-                    total += abs(x - y) ** diff_exponet
-                except TypeError:
-                    total += self._default_diff  ** diff_exponet if x != y else self._default_same ** diff_exponet
+            # if type(x) != type(y):
+            #     total += self._default_diff ** diff_exponet
+            # else:
+            try:
+                total += abs(x - y) ** diff_exponet
+            except TypeError:
+                total += self._default_diff  ** diff_exponet if x != y else self._default_same ** diff_exponet
 
         return total ** float(rooter)
 
