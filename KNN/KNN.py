@@ -22,10 +22,11 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         for x, y in zip(pointOne, pointTwo):
             if type(x) != type(y):
                 total += self._default_diff ** diff_exponet
-            elif isinstance(x, (float, int)):
-                total += abs(x - y) ** diff_exponet
             else:
-                total += self._default_diff  ** diff_exponet if x != y else self._default_same ** diff_exponet 
+                try:
+                    total += abs(x - y) ** diff_exponet
+                except TypeError:
+                    total += self._default_diff  ** diff_exponet if x != y else self._default_same ** diff_exponet
 
         return total ** float(rooter)
 
@@ -46,10 +47,11 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         inverse_distance = lambda dist: dist ** -2
         results = {}
         for neighbor in neighbors:
+            this_neighbor = 1 if self.weight_type == "no_weight" else inverse_distance(neighbor[0])
             if neighbor[1] in results:
-                results[neighbor[1]] += 1 if self.weight_type == "no_weight" else inverse_distance(neighbors[0])
+                results[neighbor[1]] += this_neighbor
             else:
-                results[neighbor[1]] = 1 if self.weight_type == "no_weight" else inverse_distance(neighbor[0])
+                results[neighbor[1]] = this_neighbor
 
         return max(results, key=lambda k: results[k])
 
@@ -68,14 +70,14 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         for predict_index in range(predict_instances):
             neighbors = [] # dist, label
             for stored_index in range(stored_instances):
-                neighbors.append((self._distance(self.data[stored_index], data[predict_index]), self.data_labels[stored_index]))
+                neighbors.append((self._distance(self.data[stored_index], data[predict_index]), self.data_labels[stored_index][0]))
             neighbors = sorted(neighbors)[:self.k]
             results.append(self._analyze_neighbors(neighbors))   
         
         return results, np.shape(results)
 
     #Returns the Mean score given input data and labels
-    def score(self, X, y):
+    def score(self, X, y, predict_results=None):
             """ Return accuracy of model on a given dataset. Must implement own score function.
             Args:
                     X (array-like): A 2D numpy array with data, excluding targets
@@ -84,11 +86,13 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
                     score : float
                             Mean accuracy of self.predict(X) wrt. y.
             """
-            results = self.predict(X)
+            results = predict_results
+            if results is None:
+                results = np.reshape(self.predict(X)[0], np.shape(y))
             correct = 0
             for scored, expected in zip(results, y):
                 if scored == expected:
                     correct += 1
-            return 0 if len(results) == 0 else correct / len(results)
+            return 0 if len(results) == 0 else (correct / len(results)) * 100
 
 
