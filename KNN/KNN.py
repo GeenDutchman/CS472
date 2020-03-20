@@ -87,6 +87,37 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
                 neighbors.append((self._distance(self.data[stored_index], data[predict_index]), self.data_labels[stored_index][0], data[predict_index]))
             neighbors = sorted(neighbors, key=lambda x: x[0])[:self.k]
             results.append(self._analyze_neighbors(neighbors))   
+
+## This is code that I was trying to get optimized...I didn't allow for enough time
+'''
+        distances = [np.linalg.norm(self.data - x, axis=1) for x in data]
+        if self.weight_type == "inverse_distance":
+            inverse = lambda x : x**-2
+            vectorized = np.vectorize(inverse)
+            distances = [vectorized(x) for x in distances]
+        argDist = [np.argpartition(x,len(x) - (self.k + 1))[:self.k] for x in distances]
+        
+        if not self.regression:
+            results = []
+            for pointIndex in range(len(argDist)):
+                neighbor_label = {}
+                point = argDist[pointIndex]
+                for neighborIndex in point:
+                    this_neighbor = 1 if self.weight_type == "inverse_distance" else distances[pointIndex][neighborIndex]
+                    label = self.data_labels[neighborIndex][0]
+                    if label in neighbor_label:
+                        neighbor_label[label] = this_neighbor
+                    else:
+                        neighbor_label[label] += this_neighbor
+                results.append(max(results, key=lambda k: results[k]))
+        else:
+            numerator = np.zeros(np.shape(distances[0][0]))
+            for pointIndex in range(len(argDist)):
+                point = argDist[pointIndex]
+                for neighborIndex in point:
+                    dist = distances[pointIndex][neighborIndex]
+'''        
+
         
         return results, np.shape(results)
 
