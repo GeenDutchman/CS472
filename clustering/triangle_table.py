@@ -2,9 +2,13 @@ class TriangleTable():
     _first_coord = {}
 
     def directional_add(self, key1, key2, value):
-        self._first_coord[key1] = {key2: value}
+        if key1 not in self._first_coord.keys():
+            self._first_coord[key1] = {}
+        self._first_coord[key1][key2] = value
 
     def add(self, key1, key2, value):
+        if key1 == key2:
+            raise KeyError("Keys cannot be the same")
         self.directional_add(key1, key2, value)
         self.directional_add(key2, key1, value)
 
@@ -17,3 +21,6 @@ class TriangleTable():
 
     def get(self, key1, key2):
         return self._first_coord[key1][key2]
+
+    def __repr__(self):
+        return str(self._first_coord)
