@@ -53,10 +53,11 @@ class HACClustering(BaseEstimator,ClusterMixin):
 
     def _find_closest(self):
         closest = (np.inf, []) # dist, close_groups
-        for group_a_index in range(len(self.tree[self.latest_level])):
-            for group_b_index in range(group_a_index + 1, len(self.tree[self.latest_level])):
-                group_a = self.tree[self.latest_level][group_a_index]
-                group_b = self.tree[self.latest_level][group_b_index]
+        latest_level = self.levels[-1]
+        for group_a_index in range(len(self.tree[latest_level])):
+            for group_b_index in range(group_a_index + 1, len(self.tree[latest_level])):
+                group_a = self.tree[latest_level][group_a_index]
+                group_b = self.tree[latest_level][group_b_index]
                 dist = self._dist(group_a, group_b)
                 if dist < closest[0]:
                     closest = (dist, (group_a, group_b))
@@ -71,32 +72,71 @@ class HACClustering(BaseEstimator,ClusterMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
         """
         self.tree = dict()
+        self.levels = []
         self.data = X
 
-        self.latest_level = 0
+        self.levels.append((0,0)) # index, dist
 
-        self.tree[self.latest_level] = []
+        self.tree[self.levels[-1]] = []
         for i in range(len(self.data)):
-            self.tree[self.latest_level].append((i,))
+            self.tree[self.levels[-1]].append((i,))
 
-        while(len(self.tree[self.latest_level]) > self.k):
-            closest = self._find_closest()
-            next_level = self.latest_level + 1
+        while(len(self.tree[self.levels[-1]]) > 1):
+            closest = self._find_closest() # closest = (dist, close_groups)
+            next_level = (len(self.levels), closest[0])
             self.tree[next_level] = []
-            for group in self.tree[self.latest_level]:
+            for group in self.tree[self.levels[-1]]:
                 if group in closest[1]:
                     continue
                 self.tree[next_level].append(group)
             new_group = sum(closest[1], tuple())
             self.tree[next_level].append(new_group)
-            self.latest_level = next_level
+            self.levels.append(next_level)
 
         return self
+
+    def cluster_SSE(self, cluster):
+        total = np.zeros(np.shape(self.data[cluster[0]]))
+        for index in cluster:
+            total = total + self.data[index]
+        centroid = total / len(cluster)
+        sse = 0
+        for index in cluster:
+            sse = sse + (self._distance(self.data[index], centroid) ** 2)
+
+        str_out = np.array2string(centroid,precision=4,separator=',') + '\n'
+        str_out = str_out + "{:d}".format(len(cluster)) + '\n'
+        str_out = str_out + "{:.4f}".format(sse) + '\n\n'
+        return centroid, sse, str_out
+
+    def key_SSE(self, key):
+        cluster = self.tree[key][0]
+        str_out = ''
+        centroids = []
+        centroid, cluster_sse, cluster_str_out = self.cluster_SSE(cluster)
+        centroids.append(centroid)
+        str_out = str_out + cluster_str_out
+        for index in range(1, len(self.tree[key])): # for all others
+            centroid, sse, cluster_str_out = self.cluster_SSE(self.tree[key][index])
+            centroids.append(centroid)
+            str_out = str_out + cluster_str_out
+
+        centroid = centroids[0]
+        for index in range(1, len(centroids)):
+            centroid = centroid + centroids[index]
+        centroid = centroid / len(centroids)
+
+        sse = 0
+        for cluster_centroid in centroids:
+            sse = sse + (self._distance(centroid, cluster_centroid) ** 2)
+
+
+        return centroid, sse, "{:.4f}".format(sse) + '\n\n' + str_out      
 
     def save_clusters(self,filename):
         """
             f = open(filename,"w+") 
-            Used for grading.
+            #Used for grading.
             write("{:d}\n".format(k))
             write("{:.4f}\n\n".format(total SSE))
             for each cluster and centroid:
@@ -106,5 +146,23 @@ class HACClustering(BaseEstimator,ClusterMixin):
                 write("{:.4f}\n\n".format(SSE of cluster))
             f.close()
         """
+        f = None
+        try:
+            f = open(filename, 'w+')
+            f.write("{:d}\n".format(self.k))
+            last_group = self.levels[-1 * self.k]
+            level_result = self.key_SSE(last_group)
+            f.write(level_result[2])
+        finally:
+            if f != None:
+                f.close()
+        
+
+    def __repr__(self):
+        out = ''
+        for index in reversed(self.levels):
+            out = out + 'distance:' + str(index[1]) + ' number of groups:' + str(len(self.tree[index])) + ' groups:' + str(self.tree[index])
+            out = out + '\n'
+        return out
 
 
