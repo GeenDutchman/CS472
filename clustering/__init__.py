@@ -1,5 +1,6 @@
 import numpy as np
 from HAC import HACClustering as Hac
+from Kmeans import KMEANSClustering as Kmeans
 
 def basic_hac():
     a = np.array([[.8, .7], [0,0], [1,1],[4,4]])
@@ -8,4 +9,11 @@ def basic_hac():
     print(hac.fit(a))
     hac.save_clusters('try.txt')
 
-basic_hac()
+def basic_kmeans():
+    a = np.array([[.9, .8], [.2, .2], [.7,.6], [-.1, -.6], [.5, .5]])
+
+    kmeans = Kmeans(k=2, debug=True, window=1)
+    print(kmeans.fit(a))
+
+# basic_hac()
+basic_kmeans()
