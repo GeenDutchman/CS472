@@ -110,28 +110,15 @@ class HACClustering(BaseEstimator,ClusterMixin):
         return centroid, sse, str_out
 
     def key_SSE(self, key):
-        cluster = self.tree[key][0]
         str_out = ''
-        centroids = []
-        centroid, cluster_sse, cluster_str_out = self.cluster_SSE(cluster)
-        centroids.append(centroid)
-        str_out = str_out + cluster_str_out
-        for index in range(1, len(self.tree[key])): # for all others
+        sse_total = 0
+        for index in range(len(self.tree[key])):
             centroid, sse, cluster_str_out = self.cluster_SSE(self.tree[key][index])
-            centroids.append(centroid)
-            str_out = str_out + cluster_str_out
-
-        centroid = centroids[0]
-        for index in range(1, len(centroids)):
-            centroid = centroid + centroids[index]
-        centroid = centroid / len(centroids)
-
-        sse = 0
-        for cluster_centroid in centroids:
-            sse = sse + (self._distance(centroid, cluster_centroid) ** 2)
-
-
-        return centroid, sse, "{:.4f}".format(sse) + '\n\n' + str_out      
+            str_out += cluster_str_out
+            sse_total += sse
+        
+        return "{:.4f}\n\n".format(sse_total) + str_out
+   
 
     def save_clusters(self,filename):
         """
@@ -152,7 +139,7 @@ class HACClustering(BaseEstimator,ClusterMixin):
             f.write("{:d}\n".format(self.k))
             last_group = self.levels[-1 * self.k]
             level_result = self.key_SSE(last_group)
-            f.write(level_result[2])
+            f.write(level_result)
         finally:
             if f != None:
                 f.close()
