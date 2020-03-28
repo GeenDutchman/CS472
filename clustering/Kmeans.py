@@ -7,7 +7,7 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
     _euclidian = lambda point_x, point_y:  KMEANSClustering._base_formula_(point_x, point_y, 2, 0.5)
     _manhattan = lambda point_x, point_y:  KMEANSClustering._base_formula_(point_x, point_y, 1, 1)
 
-    def __init__(self,k=3,debug=False, distance="manhattan", window=0, tol=0): ## add parameters here
+    def __init__(self,k=3,debug=False, distance="euclidian", window=0, tol=0): ## add parameters here
         """
         Args:
             k = how many final clusters to have
