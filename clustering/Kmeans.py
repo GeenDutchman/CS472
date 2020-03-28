@@ -26,11 +26,16 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
         self.window = window
         self.tol = tol
 
-    def update_closest(self):
+    def _distances_from_centroids(self, points=None):
         distances = []
+        points = self.data if points is None else points
         for centroid in self.centroids:
             c_dist = lambda point_y: self._distance(centroid, point_y)
-            distances.append(np.apply_along_axis(c_dist, axis=1, arr=self.data))
+            distances.append(np.apply_along_axis(c_dist, axis=1, arr=points))
+        return distances
+
+    def update_closest(self):
+        distances = self._distances_from_centroids()
         new_membership = np.argmin(distances, axis=0)
         change = np.sum(self.membership != new_membership)
         self.membership = new_membership
@@ -75,6 +80,15 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
 
         return self
 
+    def _sse_clusters(self):
+        distances = self._distances_from_centroids()
+        sse = np.zeros((len(self.centroids),))
+        counts = np.zeros((len(self.centroids),))
+        for index in range(len(self.membership)):
+            sse[self.membership[index]] += distances[self.membership[index]][index] ** 2
+            counts[self.membership[index]] += 1
+        return sse, counts
+
 
     def save_clusters(self,filename):
         """
@@ -89,6 +103,20 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
                 write("{:.4f}\n\n".format(SSE of cluster))
             f.close()
         """
+        f = None
+        try:
+            f = open(filename, "w+")
+            f.write("{:d}\n".format(self.k))
+            sse_for_clusters, counts = self._sse_clusters()
+            f.write("{:.4f}\n\n".format(np.sum(sse_for_clusters)))
+            for centroid, sse, count in zip(self.centroids, sse_for_clusters, counts):
+                f.write(np.array2string(centroid,precision=4,separator=","))
+                f.write("\n")
+                f.write("{:d}\n".format(int(count)))
+                f.write("{:.4f}\n\n".format(sse))
+        finally:
+            if f != None:
+                f.close()
 
     def __repr__(self):
         out = ''
