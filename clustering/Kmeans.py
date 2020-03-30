@@ -83,6 +83,8 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
             indicies = np.random.randint(0, high=len(self.data), size=self.k)
             self.centroids = [np.copy(self.data[i]) for i in indicies]
 
+        self.centroids = np.array(self.centroids)
+
         if abs(len(self.membership) * self.tol) < len(self.membership):
             self.tol = abs(int(len(self.membership) * self.tol))
 
