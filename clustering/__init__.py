@@ -194,5 +194,5 @@ def sk_iris():
 # basic_kmeans()
 # debug()
 # evaluation()
-# iris()
-sk_iris()
+iris()
+# sk_iris()
