@@ -78,20 +78,20 @@ def iris():
     ldata = mat.data
     nldata = ldata[:-1]
 
-    hac_single_l = Hac(link_type="single", k=k)
-    hac_single.fit(ldata)
+    hac_single_l = Hac(link_type="single", k=1)
+    hac_single_l.fit(ldata)
     print("single calculated")
 
     hac_complete_l = Hac(link_type="complete", k=1)
-    hac_complete.fit(ldata)
+    hac_complete_l.fit(ldata)
     print("complete calculated")
 
     hac_single_nl = Hac(link_type="single", k=1)
-    hac_single.fit(nldata)
+    hac_single_nl.fit(nldata)
     print("nl single calculated")
 
     hac_complete_nl = Hac(link_type="complete", k=1)
-    hac_complete.fit(nldata)
+    hac_complete_nl.fit(nldata)
     print("nl complete calculated")
 
     def run_both(k, dataset):
