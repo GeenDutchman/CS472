@@ -62,7 +62,11 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
         for index in range(len(self.membership)):
             self.centroids[self.membership[index]] += self.data[index]
             counts[self.membership[index]] += 1
-        self.centroids /= counts       
+
+        for index in range(len(counts)):
+            if counts[index] != 0:
+                self.centroids[index] /= counts[index]
+        # self.centroids /= counts       
 
     def fit(self,X,y=None):
         """ Fit the data; In this lab this will make the K clusters :D
