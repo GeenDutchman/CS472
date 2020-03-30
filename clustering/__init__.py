@@ -8,7 +8,7 @@ from HAC import HACClustering as Hac
 from Kmeans import KMEANSClustering as Kmeans
 
 _base_formula_ = lambda point_x, point_y, power, rooter: sum(abs(point_x - point_y) ** power) ** rooter
-_euclidian = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 2, 0.5)
+_euclidian = lambda point_x, point_y:  _base_formula_(point_x, point_y, 2, 0.5)
 
 def basic_hac():
     a = np.array([[.8, .7], [0,0], [1,1],[4,4]])
@@ -170,7 +170,7 @@ def sk_iris():
         hac_complete = Sk_HAC(n_clusters=k, linkage='complete')
         hac_complete.fit(dataset)
         # hac_complete.save_clusters("./out/" + str(k) _ "_hac_complete.txt")
-        sse_set[3].append(hac_complete.labels_, hac_complete.n_clusters)
+        sse_set[3].append(sse_cluster(hac_complete.labels_, hac_complete.n_clusters))
 
     
     sse_with_label = [[],[],[],[]]
@@ -194,4 +194,5 @@ def sk_iris():
 # basic_kmeans()
 # debug()
 # evaluation()
-iris()
+# iris()
+sk_iris()
