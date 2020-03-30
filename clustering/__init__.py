@@ -104,18 +104,18 @@ def iris():
         # sse_set[1].append(kmeans._sse_clusters()[0])
 
 
-        hac_single_l.save_clusters("./out/" + str(k) + "_hac_single_l.txt")
+        hac_single_l.save_clusters("./out/" + str(k) + "_hac_single_l.txt", k)
         # sse_set[2].append(hac_single.key_SSE()[0])
 
         
-        hac_complete_l.save_clusters("./out/" + str(k) + "_hac_complete_l.txt")
+        hac_complete_l.save_clusters("./out/" + str(k) + "_hac_complete_l.txt", k)
         # sse_set[3].append(hac_single.key_SSE()[0])
 
-        hac_single_nl.save_clusters("./out/" + str(k) + "_hac_single_nl.txt")
+        hac_single_nl.save_clusters("./out/" + str(k) + "_hac_single_nl.txt", k)
         # sse_set[2].append(hac_single.key_SSE()[0])
 
         
-        hac_complete_nl.save_clusters("./out/" + str(k) + "_hac_complete_nl.txt")
+        hac_complete_nl.save_clusters("./out/" + str(k) + "_hac_complete_nl.txt", k)
         # sse_set[3].append(hac_single.key_SSE()[0])
 
 
