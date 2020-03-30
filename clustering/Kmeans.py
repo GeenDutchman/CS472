@@ -3,9 +3,11 @@ from sklearn.base import BaseEstimator, ClusterMixin
 
 class KMEANSClustering(BaseEstimator,ClusterMixin):
 
-    _base_formula_ = lambda point_x, point_y, power, rooter: sum(abs(point_x - point_y) ** power) ** rooter
-    _euclidian = lambda point_x, point_y:  KMEANSClustering._base_formula_(point_x, point_y, 2, 0.5)
-    _manhattan = lambda point_x, point_y:  KMEANSClustering._base_formula_(point_x, point_y, 1, 1)
+    # _base_formula_ = lambda point_x, point_y, power, rooter: sum(abs(point_x - point_y) ** power) ** rooter
+    # _euclidian = lambda point_x, point_y:  KMEANSClustering._base_formula_(point_x, point_y, 2, 0.5)
+    # _manhattan = lambda point_x, point_y:  KMEANSClustering._base_formula_(point_x, point_y, 1, 1)
+    _euclidian = lambda point_x, point_y: np.sum(np.abs(point_x - point_y) ** 2) ** 0.5
+    _manhattan = lambda point_x, point_y: np.sum(np.abs(point_x - point_y))
 
     def __init__(self,k=3,debug=False, distance="euclidian", window=0, tol=0): ## add parameters here
         """
@@ -25,6 +27,19 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
 
         self.window = window
         self.tol = tol
+
+    '''
+
+    def update_closest_easy(self):
+        count = 0
+        for index in range(len(self.membership)):
+            if self.membership[index] != self.membership_old[index]:
+                count += 1
+                self.centroids[self.membership_old[index]] -= self.data[index]
+                self.centroids[self.membership[index]] += self.data[index]
+
+        return count
+    '''
 
     def _distances_from_centroids(self, points=None):
         distances = []
@@ -59,6 +74,7 @@ class KMEANSClustering(BaseEstimator,ClusterMixin):
         """
         self.data = X
         self.membership = np.array([None] * len(self.data))
+        # self.membership_old = np.array([False] * len(self.data))
         self.centroids = []
         if self.debug:
             for i in range(self.k):

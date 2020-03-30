@@ -4,9 +4,11 @@ from triangle_table import TriangleTable
 
 class HACClustering(BaseEstimator,ClusterMixin):
 
-    _base_formula_ = lambda point_x, point_y, power, rooter: sum(abs(point_x - point_y) ** power) ** rooter
-    _euclidian = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 2, 0.5)
-    _manhattan = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 1, 1)
+    # _base_formula_ = lambda point_x, point_y, power, rooter: sum(abs(point_x - point_y) ** power) ** rooter
+    # _euclidian = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 2, 0.5)
+    # _manhattan = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 1, 1)
+        _euclidian = lambda point_x, point_y: np.sum(np.abs(point_x - point_y) ** 2) ** 0.5
+    _manhattan = lambda point_x, point_y: np.sum(np.abs(point_x - point_y))
 
     def __init__(self,k=3,link_type='single',distance="euclidian"): ## add parameters here
         """
@@ -109,7 +111,8 @@ class HACClustering(BaseEstimator,ClusterMixin):
         str_out = str_out + "{:.4f}".format(sse) + '\n\n'
         return centroid, sse, str_out
 
-    def key_SSE(self, key):
+    def key_SSE(self, key=None):
+        key = key if key != None else self.levels[-1]
         str_out = ''
         sse_total = 0
         for index in range(len(self.tree[key])):
@@ -117,10 +120,10 @@ class HACClustering(BaseEstimator,ClusterMixin):
             str_out += cluster_str_out
             sse_total += sse
         
-        return "{:.4f}\n\n".format(sse_total) + str_out
+        return sse_total, "{:.4f}\n\n".format(sse_total) + str_out
    
 
-    def save_clusters(self,filename):
+    def save_clusters(self,filename, key=None):
         """
             f = open(filename,"w+") 
             #Used for grading.
@@ -133,13 +136,14 @@ class HACClustering(BaseEstimator,ClusterMixin):
                 write("{:.4f}\n\n".format(SSE of cluster))
             f.close()
         """
+        key = -1 * self.k if key == None else -1
         f = None
         try:
             f = open(filename, 'w+')
-            f.write("{:d}\n".format(self.k))
-            last_group = self.levels[-1 * self.k]
+            f.write("{:d}\n".format(self.levels(key)))
+            last_group = self.levels[-1 * abs(key)]
             level_result = self.key_SSE(last_group)
-            f.write(level_result)
+            f.write(level_result[1])
         finally:
             if f != None:
                 f.close()
