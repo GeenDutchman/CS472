@@ -7,7 +7,7 @@ class HACClustering(BaseEstimator,ClusterMixin):
     # _base_formula_ = lambda point_x, point_y, power, rooter: sum(abs(point_x - point_y) ** power) ** rooter
     # _euclidian = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 2, 0.5)
     # _manhattan = lambda point_x, point_y:  HACClustering._base_formula_(point_x, point_y, 1, 1)
-        _euclidian = lambda point_x, point_y: np.sum(np.abs(point_x - point_y) ** 2) ** 0.5
+    _euclidian = lambda point_x, point_y: np.sum(np.abs(point_x - point_y) ** 2) ** 0.5
     _manhattan = lambda point_x, point_y: np.sum(np.abs(point_x - point_y))
 
     def __init__(self,k=3,link_type='single',distance="euclidian"): ## add parameters here
