@@ -140,7 +140,7 @@ class HACClustering(BaseEstimator,ClusterMixin):
         f = None
         try:
             f = open(filename, 'w+')
-            f.write("{:d}\n".format(key))
+            f.write("{:d}\n".format(abs(key)))
             last_group = self.levels[-1 * abs(key)]
             level_result = self.key_SSE(last_group)
             f.write(level_result[1])
