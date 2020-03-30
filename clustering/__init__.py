@@ -82,15 +82,15 @@ def iris():
     hac_single.fit(ldata)
     print("single calculated")
 
-    hac_complete_l = Hac(link_type="complete", k=k)
+    hac_complete_l = Hac(link_type="complete", k=1)
     hac_complete.fit(ldata)
     print("complete calculated")
 
-    hac_single_nl = Hac(link_type="single", k=k)
+    hac_single_nl = Hac(link_type="single", k=1)
     hac_single.fit(nldata)
     print("nl single calculated")
 
-    hac_complete_nl = Hac(link_type="complete", k=k)
+    hac_complete_nl = Hac(link_type="complete", k=1)
     hac_complete.fit(nldata)
     print("nl complete calculated")
 
