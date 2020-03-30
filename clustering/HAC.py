@@ -136,7 +136,7 @@ class HACClustering(BaseEstimator,ClusterMixin):
                 write("{:.4f}\n\n".format(SSE of cluster))
             f.close()
         """
-        key = -1 * self.k if key == None else -1
+        key = -1 if key == None else key
         f = None
         try:
             f = open(filename, 'w+')
